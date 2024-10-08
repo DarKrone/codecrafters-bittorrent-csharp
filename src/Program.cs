@@ -111,13 +111,10 @@ public class Bencode()
         var result = new Dictionary<object, object>();
         while (input.Length > 0 && input[0] != 'e')
         {
-            Console.WriteLine(input);
             var key = StringDecode(input);
-            Console.WriteLine(key);
             input = input[Encode(key).Length..];
 
             var value = Decode(input);
-            Console.WriteLine(value);
             input = input[Encode(value).Length..];
 
             result.Add(key, value);
