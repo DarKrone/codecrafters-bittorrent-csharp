@@ -75,7 +75,7 @@ List<object> ArrayBencode(string encodedValue)
 {
     List<object> array = new List<object>();
     string tempEncodeValue = encodedValue.Substring(1);
-    Console.WriteLine(encodedValue);
+    //Console.WriteLine(encodedValue);
     while (tempEncodeValue != "e" || tempEncodeValue.Length == 0)
     {
         if (Char.IsDigit(tempEncodeValue[0]))
@@ -104,8 +104,8 @@ List<object> ArrayBencode(string encodedValue)
             array.Add(ArrayBencode(tempEncodeValue.Substring(0, tempEncodeValue.LastIndexOf('e'))));
             tempEncodeValue = tempEncodeValue.Substring(tempEncodeValue.LastIndexOf('e'));
         }
-        Console.WriteLine(tempEncodeValue);
-        Console.WriteLine(JsonSerializer.Serialize(array));
+        //Console.WriteLine(tempEncodeValue);
+        //Console.WriteLine(JsonSerializer.Serialize(array));
     }
     return array;
 }
