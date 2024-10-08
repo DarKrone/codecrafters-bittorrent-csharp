@@ -35,6 +35,10 @@ public class Bencode()
         {
             return ArrayDecode(input);
         }
+        else if (input[0] == 'd')
+        {
+            return DictionaryDecode(input);
+        }
         else
         {
             throw new InvalidOperationException("Unhandled encoded value: " + input);
@@ -99,5 +103,25 @@ public class Bencode()
             input = input[Encode(element).Length..];
         }
         return result.ToArray();
+    }
+
+    public static Dictionary<object, object> DictionaryDecode(string input)
+    {
+        input = input[1..];
+        var result = new Dictionary<object, object>();
+        while (input.Length > 0 && input[0] != 'e')
+        {
+            Console.WriteLine(input);
+            var key = StringDecode(input);
+            Console.WriteLine(key);
+            input = input[Encode(key).Length..];
+
+            var value = Decode(input);
+            Console.WriteLine(value);
+            input = input[Encode(value).Length..];
+
+            result.Add(key, value);
+        }
+        return result;
     }
 }
