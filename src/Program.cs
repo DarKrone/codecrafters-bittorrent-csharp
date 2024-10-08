@@ -27,6 +27,25 @@ if (command == "decode")
             throw new InvalidOperationException("Invalid encoded value: " + encodedValue);
         }
     }
+    else if (encodedValue[0] == 'i')
+    {
+        var endIndex = encodedValue.IndexOf('e');
+        if (endIndex != -1)
+        {
+            if (int.TryParse(encodedValue.Substring(1, endIndex - 1), out var number))
+            {
+                Console.WriteLine(JsonSerializer.Serialize(number));
+            }
+            else
+            {
+                throw new InvalidOperationException("Invalid number was given: " + number);
+            }
+        }
+        else
+        {
+            throw new InvalidOperationException("Missing end of output (e)");
+        }
+    }
     else
     {
         throw new InvalidOperationException("Unhandled encoded value: " + encodedValue);
