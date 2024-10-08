@@ -32,7 +32,7 @@ if (command == "decode")
         var endIndex = encodedValue.IndexOf('e');
         if (endIndex != -1)
         {
-            if (int.TryParse(encodedValue.Substring(1, endIndex - 1), out var number))
+            if (long.TryParse(encodedValue.Substring(1, endIndex - 1), out var number))
             {
                 Console.WriteLine(JsonSerializer.Serialize(number));
             }
