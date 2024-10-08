@@ -14,37 +14,42 @@ if (command == "decode")
     var encodedValue = param;
     if (Char.IsDigit(encodedValue[0]))
     {
-        // Example: "5:hello" -> "hello"
-        var colonIndex = encodedValue.IndexOf(':');
-        if (colonIndex != -1)
-        {
-            var strLength = int.Parse(encodedValue[..colonIndex]);
-            var strValue = encodedValue.Substring(colonIndex + 1, strLength);
-            Console.WriteLine(JsonSerializer.Serialize(strValue));
-        }
-        else
-        {
-            throw new InvalidOperationException("Invalid encoded value: " + encodedValue);
-        }
+        Console.WriteLine(JsonSerializer.Serialize(StringBencode(encodedValue)));
     }
     else if (encodedValue[0] == 'i')
     {
-        var endIndex = encodedValue.IndexOf('e');
-        if (endIndex != -1)
+        Console.WriteLine(JsonSerializer.Serialize(IntegerBencode(encodedValue)));
+    }
+    else if (encodedValue[0] == 'l')
+    {
+        List<object> array = new List<object>();
+        string tempEncodeValue = encodedValue.Substring(1);
+
+        while (tempEncodeValue != "e")
         {
-            if (long.TryParse(encodedValue.Substring(1, endIndex - 1), out var number))
+            if (Char.IsDigit(tempEncodeValue[0]))
             {
-                Console.WriteLine(JsonSerializer.Serialize(number));
+                var colonIndex = tempEncodeValue.IndexOf(':');
+                var strLength = int.Parse(tempEncodeValue[..colonIndex]);
+
+                string tempString = tempEncodeValue.Substring(0, colonIndex + strLength + 1);
+                array.Add(StringBencode(tempString));
+
+                tempEncodeValue = tempEncodeValue.Substring(colonIndex + strLength + 1);
             }
-            else
+            else if (tempEncodeValue[0] == 'i')
             {
-                throw new InvalidOperationException("Invalid number was given: " + number);
+                var endIndex = tempEncodeValue.IndexOf('e');
+                var numberLength = int.Parse(tempEncodeValue[1..endIndex]);
+
+                string tempString = tempEncodeValue.Substring(0, endIndex + 1);
+
+                array.Add(IntegerBencode(tempString));
+
+                tempEncodeValue = tempEncodeValue.Substring(endIndex + 1);
             }
         }
-        else
-        {
-            throw new InvalidOperationException("Missing end of output (e)");
-        }
+        Console.WriteLine(JsonSerializer.Serialize(array));
     }
     else
     {
@@ -54,4 +59,40 @@ if (command == "decode")
 else
 {
     throw new InvalidOperationException($"Invalid command: {command}");
+}
+
+string StringBencode(string encodedValue)
+{
+    // Example: "5:hello" -> "hello"
+    var colonIndex = encodedValue.IndexOf(':');
+    if (colonIndex != -1)
+    {
+        var strLength = int.Parse(encodedValue[..colonIndex]);
+        var strValue = encodedValue.Substring(colonIndex + 1, strLength);
+        return strValue;
+    }
+    else
+    {
+        throw new InvalidOperationException("Invalid encoded value: " + encodedValue);
+    }
+}
+
+long IntegerBencode(string encodedValue)
+{
+    var endIndex = encodedValue.IndexOf('e');
+    if (endIndex != -1)
+    {
+        if (long.TryParse(encodedValue.Substring(1, endIndex - 1), out var number))
+        {
+            return number;
+        }   
+        else
+        {
+            throw new InvalidOperationException("Invalid number was given: " + number);
+        }
+    }
+    else
+    {
+        throw new InvalidOperationException("Missing end of output (e)");
+    }
 }
