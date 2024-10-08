@@ -52,6 +52,7 @@ public class Bencode()
             TypeCode.Int16 or TypeCode.Int32 or TypeCode.Int64 => $"i{input}e",
             TypeCode.String => $"{((string)input).Length}:{input}",
             TypeCode.Object => input is object[] inputArray ? $"l{string.Join("", inputArray.Select(x => Encode(x)))}e"
+                                                            : input is Dictionary<object, object> inputDict ? $"d{string.Join("", inputDict.Select(x => Encode(x.Key) + Encode(x.Value)))}e"
                                                             : throw new Exception($"Unknown type: {input.GetType().FullName}"),
             _ => throw new Exception($"Unknown type: {input.GetType().FullName}")
         };
