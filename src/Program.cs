@@ -1,3 +1,4 @@
+using System.IO;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
@@ -43,7 +44,11 @@ else if (command == "info")
 
         var hashInfo = Bencode.GetInfoHash(bytes, text);
 
-        Console.WriteLine($"Tracker URL: {metaInfo.announce}\nLength: {metaInfo?.info?.length}\nInfo Hash: {hashInfo}"); 
+        var pieceHashes = Bencode.GetPieceHashes(metaInfo.info.length, metaInfo.info.piecelength, bytes, text);
+
+        Console.WriteLine($"Tracker URL: {metaInfo.announce}\nLength: {metaInfo?.info?.length}\nInfo Hash: {hashInfo}" +
+            $"\nPiece Length: {metaInfo?.info.piecelength}\nPiece Hashes:\n" +
+            $"{String.Join("\n", pieceHashes)}"); 
     }
 }
 else
@@ -55,7 +60,14 @@ public class MetaInfo
 {
     public string? announce { get; set; }
     public string? createdby { get; set; }
-    public Info? info { get; set; }
+    public Info info { get; set; }
+    
+    public MetaInfo()
+    {
+        announce = null;
+        createdby = null;
+        info = new Info();
+    }
 }
 
 public class Info
@@ -78,6 +90,26 @@ public class Bencode()
         var chunk = bytes[infoHashStart..^1];
         var hash = SHA1.HashData(chunk);
         return Convert.ToHexString(hash).ToLower();
+    }
+
+    public static string[] GetPieceHashes(long length, long pieceLength, byte[] bytes, string stream)
+    {
+        string[] pieceHashes = new string[(int)Math.Ceiling((double)length / pieceLength)];
+
+        const string piecesMark = "6:pieces";
+        var piecesBytesStart = bytes[(stream.IndexOf(piecesMark) + piecesMark.Length - 1)..];
+        var piecesStreamStart = stream[(stream.IndexOf(piecesMark) + piecesMark.Length - 1)..];
+        var chunk = piecesBytesStart[(piecesStreamStart.IndexOf(":") + 1)..^1];
+        var pieceChunk = 20;
+
+        for (int i = 0; i < pieceHashes.Length; i++)
+        {
+            var tempChunk = chunk[..pieceChunk];
+            pieceHashes[i] = Convert.ToHexString(tempChunk).ToLower();
+            chunk = chunk[pieceChunk..];
+        }
+
+        return pieceHashes;
     }
 
     public static object Decode(string input)
