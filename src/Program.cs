@@ -1,7 +1,10 @@
 using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using System.Threading.Channels;
 
 
 // Parse arguments
@@ -27,12 +30,27 @@ else if (command == "info")
     var bytes = File.ReadAllBytes(path);
     if (bytes != null)
     {
-        string text = System.Text.Encoding.ASCII.GetString(bytes);
-        Console.WriteLine(text);
+
+        string text = System.Text.Encoding.UTF8.GetString(bytes);
+
+  
+
         var output = JsonSerializer.Serialize(Bencode.Decode(text));
-            
+
         MetaInfo metaInfo = JsonSerializer.Deserialize<MetaInfo>(output)!;
-        Console.WriteLine($"Tracker URL: {metaInfo.announce}\nLength: {metaInfo?.info?.length}"); 
+
+        var infoJson = JsonSerializer.Serialize(metaInfo.info);
+
+        var infoDict = JsonSerializer.Deserialize<Dictionary<string, object>>(infoJson)!;
+
+        var bencodeInfo = Bencode.Encode(infoDict);
+
+
+        var hashInfo = Bencode.Hash(bencodeInfo);
+
+
+
+        Console.WriteLine($"Tracker URL: {metaInfo.announce}\nLength: {metaInfo?.info?.length}\nInfo Hash: {hashInfo}"); 
     }
 }
 else
@@ -51,12 +69,20 @@ public class Info
 {
     public int length { get; set; }
     public string? name { get; set; }
+
+    [JsonPropertyName("piece length")]
     public int piecelength { get; set; }
     public string? pieces { get; set; }
 }
 
+
 public class Bencode()
 {
+    public static string Hash(string input)
+    {
+        return Convert.ToHexString(SHA1.HashData(Encoding.ASCII.GetBytes(input)));
+    }
+
     public static object Decode(string input)
     {
         if (Char.IsDigit(input[0]))
@@ -83,13 +109,26 @@ public class Bencode()
 
     public static string Encode(object input)
     {
+        if (input == null)
+        {
+            throw new Exception("Input in encode was null");
+        }
+        if (input is System.Text.Json.JsonElement jsonElement)
+        {
+            switch (jsonElement.ValueKind)
+            {
+                case JsonValueKind.String: input = jsonElement.GetString()!; break;
+                case JsonValueKind.Number: input = jsonElement.GetInt64(); break;
+            }
+        }
         return Type.GetTypeCode(input.GetType()) switch
         {
             TypeCode.Int16 or TypeCode.Int32 or TypeCode.Int64 => $"i{input}e",
             TypeCode.String => $"{((string)input).Length}:{input}",
             TypeCode.Object => input is object[] inputArray ? $"l{string.Join("", inputArray.Select(x => Encode(x)))}e"
-                                                            : input is Dictionary<object, object> inputDict ? $"d{string.Join("", inputDict.Select(x => Encode(x.Key) + Encode(x.Value)))}e"
+                                                            : input is Dictionary<string, object> inputDict ? $"d{string.Join("", inputDict.Select(x => Encode(x.Key) + Encode(x.Value)))}e"
                                                             : throw new Exception($"Unknown type: {input.GetType().FullName}"),
+            
             _ => throw new Exception($"Unknown type: {input.GetType().FullName}")
         };
     }
@@ -142,10 +181,10 @@ public class Bencode()
         return result.ToArray();
     }
 
-    public static Dictionary<object, object> DictionaryDecode(string input)
+    public static Dictionary<string, object> DictionaryDecode(string input)
     {
         input = input[1..];
-        var result = new Dictionary<object, object>();
+        var result = new Dictionary<string, object>();
         while (input.Length > 0 && input[0] != 'e')
         {
             var key = StringDecode(input);
