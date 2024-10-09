@@ -1,12 +1,11 @@
-using System.IO;
-using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
-using System.Threading.Channels;
-
+using System.Net.Http;
+using System.Text.Encodings.Web;
+using System.Web;
+using Microsoft.Win32.SafeHandles;
 
 // Parse arguments
 var (command, param) = args.Length switch
@@ -16,6 +15,7 @@ var (command, param) = args.Length switch
     _ => (args[0], args[1])
 };
 
+HttpClient client = new HttpClient();
 
 // Parse command and act accordingly
 if (command == "decode")
@@ -36,13 +36,7 @@ else if (command == "info")
 
         MetaInfo metaInfo = JsonSerializer.Deserialize<MetaInfo>(output)!;
 
-        var infoJson = JsonSerializer.Serialize(metaInfo.info);
-
-        var infoDict = JsonSerializer.Deserialize<Dictionary<string, object>>(infoJson)!;
-
-        var bencodeInfo = Bencode.Encode(infoDict);
-
-        var hashInfo = Bencode.GetInfoHash(bytes, text);
+        var hashInfo = Bencode.GetInfoHashString(bytes, text);
 
         var pieceHashes = Bencode.GetPieceHashes(metaInfo.info.length, metaInfo.info.piecelength, bytes, text);
 
@@ -51,9 +45,65 @@ else if (command == "info")
             $"{String.Join("\n", pieceHashes)}"); 
     }
 }
+else if(command == "peers")
+{
+    string path = $"{param}";
+
+    var bytes = File.ReadAllBytes(path);
+    if (bytes != null)
+    {
+        string text = Encoding.ASCII.GetString(bytes);
+
+        var output = JsonSerializer.Serialize(Bencode.Decode(text));
+
+        MetaInfo metaInfo = JsonSerializer.Deserialize<MetaInfo>(output)!;
+        var hashInfo = Bencode.GetInfoHashBytes(bytes, text);
+
+        var urlEncoded = HttpUtility.UrlEncode(hashInfo);
+        var queryParameters = new Dictionary<string, string>
+        {
+            {"info_hash", urlEncoded},
+            {"peer_id", "12345678912345678900"},
+            {"port", "6881"},
+            {"uploaded", "0"},
+            {"downloaded", "0"},
+            {"left", metaInfo.info.length.ToString()},
+            {"compact", "1"},
+        };
+
+        var queryString = string.Join("&", queryParameters.Select(x => $"{x.Key}={x.Value}"));
+        var url = $"{metaInfo.announce}?{queryString}";
+        var response = await client.GetAsync(url);
+        var contentBytes = await response.Content.ReadAsByteArrayAsync();
+        var contentString = await response.Content.ReadAsStringAsync();
+
+        client.CancelPendingRequests();
+        client.Dispose();
+
+        var peersStart = "5:peers";
+        contentBytes = contentBytes[(contentString.IndexOf(peersStart) + peersStart.Length)..];
+        contentString = contentString[(contentString.IndexOf(peersStart) + peersStart.Length)..];
+
+        var peersBytes = contentBytes[(contentString.IndexOf(":") + 1)..^1];
+        contentString = contentString[(contentString.IndexOf(":") + 1)..^1];
+
+        for(int i = 0; i < peersBytes.Length / 6 ; i++)
+        {
+            Console.WriteLine(GetIpFromBytes(peersBytes[(6 * i)..(6 * (i + 1))]));
+        }
+    }
+}
 else
 {
     throw new InvalidOperationException($"Invalid command: {command}");
+}
+
+string GetIpFromBytes(byte[] bytes)
+{
+    string result = "";
+    result = $"{bytes[0]}.{bytes[1]}.{bytes[2]}.{bytes[3]}:{BitConverter.ToUInt16(new byte[2] { bytes[4], bytes[5] })}";
+
+    return result;
 }
 
 public class MetaInfo
@@ -83,13 +133,19 @@ public class Info
 
 public class Bencode()
 {
-    public static string GetInfoHash(byte[] bytes, string stream)
+    public static string GetInfoHashString(byte[] bytes, string stream)
+    {
+        var hash = GetInfoHashBytes(bytes, stream);
+        return Convert.ToHexString(hash).ToLower();
+    }
+
+    public static byte[] GetInfoHashBytes(byte[] bytes, string stream)
     {
         const string infoHashMark = "4:infod";
         var infoHashStart = stream.IndexOf(infoHashMark) + infoHashMark.Length - 1;
         var chunk = bytes[infoHashStart..^1];
         var hash = SHA1.HashData(chunk);
-        return Convert.ToHexString(hash).ToLower();
+        return hash;
     }
 
     public static string[] GetPieceHashes(long length, long pieceLength, byte[] bytes, string stream)
