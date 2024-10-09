@@ -23,19 +23,16 @@ if (command == "decode")
 else if (command == "info")
 {
     string path = $"{param}";
-    using (StreamReader reader = new StreamReader(path))
+
+    var bytes = File.ReadAllBytes(path);
+    if (bytes != null)
     {
-        string? text = await reader.ReadToEndAsync();
-        if (text != null)
-        {
-            text = text[..(text.IndexOf("pieces") - 2)] + "ee";
-            Console.WriteLine(text);
-            var output = JsonSerializer.Serialize(Bencode.Decode(text));
+        string text = System.Text.Encoding.ASCII.GetString(bytes);
+        Console.WriteLine(text);
+        var output = JsonSerializer.Serialize(Bencode.Decode(text));
             
-            Console.WriteLine(output);
-            MetaInfo metaInfo = JsonSerializer.Deserialize<MetaInfo>(output)!;
-            Console.WriteLine($"Tracker URL: {metaInfo.announce}\nLength: {metaInfo?.info?.length}"); 
-        }
+        MetaInfo metaInfo = JsonSerializer.Deserialize<MetaInfo>(output)!;
+        Console.WriteLine($"Tracker URL: {metaInfo.announce}\nLength: {metaInfo?.info?.length}"); 
     }
 }
 else
