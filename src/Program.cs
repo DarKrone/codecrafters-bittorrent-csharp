@@ -88,15 +88,17 @@ else if(command == "peers")
         contentString = contentString[(contentString.IndexOf(peersStart) + peersStart.Length)..];
 
         var peersLength = int.Parse(contentString.Substring(0, contentString.IndexOf(":")));
-        Console.WriteLine(peersLength);
 
         var peersBytes = contentBytes[(contentString.IndexOf(":") + 1)..(contentString.IndexOf(":") + 1 + peersLength)];
         contentString = contentString[(contentString.IndexOf(":") + 1)..(contentString.IndexOf(":") + 1 + peersLength)];
 
+        Console.WriteLine(peersBytes.Length);
         foreach ( var peer in peersBytes)
         {
             Console.Write(peer + ", ");
         }
+        Console.WriteLine();
+
         Console.WriteLine();
 
         for(int i = 0; i < peersBytes.Length / 6 ; i++)
@@ -116,7 +118,8 @@ else
 string GetIpFromBytes(byte[] bytes)
 {
     string result = "";
-    result = $"{bytes[0]}.{bytes[1]}.{bytes[2]}.{bytes[3]}:{BitConverter.ToUInt16(new byte[2] { bytes[4], bytes[5] })}";
+
+    result = $"{bytes[0]}.{bytes[1]}.{bytes[2]}.{bytes[3]}:{BitConverter.ToUInt16(new byte[2] { bytes[5], bytes[4] })}";
 
     return result;
 }
