@@ -28,7 +28,7 @@ else if (command == "info")
         string? text = await reader.ReadToEndAsync();
         if (text != null)
         {
-            text = text[..text.IndexOf("pieces")];
+            text = text[..(text.IndexOf("pieces") - 2)] + "ee";
             Console.WriteLine(text);
             var output = JsonSerializer.Serialize(Bencode.Decode(text));
             
