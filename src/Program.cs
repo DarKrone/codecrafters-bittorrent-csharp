@@ -82,29 +82,23 @@ else if(command == "peers")
         //var temp = string.Join(", ", contentBytes);
         //Console.WriteLine(temp);
         //Console.WriteLine(temp.IndexOf("178, 62, 82"));
-        Console.WriteLine(contentString);
+
         var peersStart = "5:peers";
         contentBytes = contentBytes[(contentString.IndexOf(peersStart) + peersStart.Length)..];
         contentString = contentString[(contentString.IndexOf(peersStart) + peersStart.Length)..];
 
-        var peersBytes = contentBytes[(contentString.IndexOf(":") + 1)..^1];
-        contentString = contentString[(contentString.IndexOf(":") + 1)..^1];
+        var peersLength = int.Parse(contentString.Substring(0, contentString.IndexOf(":")));
 
-        Console.WriteLine(peersBytes.Length);
+        var peersBytes = contentBytes[(contentString.IndexOf(":") + 1)..(contentString.IndexOf(":") + 1 + peersLength)];
+        contentString = contentString[(contentString.IndexOf(":") + 1)..(contentString.IndexOf(":") + 1 + peersLength)];
 
-        foreach ( var peer in peersBytes)
-        {
-            Console.Write(peer + ", ");
-        }
-        Console.WriteLine();
+
 
         for(int i = 0; i < peersBytes.Length / 6 ; i++)
         {
             Console.WriteLine(GetIpFromBytes(peersBytes[(6 * i)..(6 * (i + 1))]));
         }
 
-        Console.WriteLine();
-        Console.WriteLine(contentString);
     }
 }
 else
