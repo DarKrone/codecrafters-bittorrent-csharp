@@ -1,4 +1,8 @@
+using System.Reflection;
 using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
+
 
 // Parse arguments
 var (command, param) = args.Length switch
@@ -14,9 +18,38 @@ if (command == "decode")
     var encodedValue = param;
     Console.WriteLine(JsonSerializer.Serialize(Bencode.Decode(encodedValue)));
 }
+else if (command == "info")
+{
+    string path = $"{param}";
+    using (StreamReader reader = new StreamReader(path))
+    {
+        string? text = await reader.ReadToEndAsync();
+        if (text != null)
+        {
+            var output = JsonSerializer.Serialize(Bencode.Decode(text));
+            MetaInfo metaInfo = JsonSerializer.Deserialize<MetaInfo>(output)!;
+            Console.WriteLine($"Tracker URL: {metaInfo.announce}\nLength: {metaInfo?.info?.length}"); 
+        }
+    }
+}
 else
 {
     throw new InvalidOperationException($"Invalid command: {command}");
+}
+
+public class MetaInfo
+{
+    public string? announce { get; set; }
+    public string? createdby { get; set; }
+    public Info? info { get; set; }
+}
+
+public class Info
+{
+    public int length { get; set; }
+    public string? name { get; set; }
+    public int piecelength { get; set; }
+    public string? pieces { get; set; }
 }
 
 public class Bencode()
