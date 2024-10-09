@@ -28,8 +28,10 @@ else if (command == "info")
         string? text = await reader.ReadToEndAsync();
         if (text != null)
         {
+            text = text[..text.IndexOf("pieces")];
             Console.WriteLine(text);
             var output = JsonSerializer.Serialize(Bencode.Decode(text));
+            
             Console.WriteLine(output);
             MetaInfo metaInfo = JsonSerializer.Deserialize<MetaInfo>(output)!;
             Console.WriteLine($"Tracker URL: {metaInfo.announce}\nLength: {metaInfo?.info?.length}"); 
@@ -53,8 +55,6 @@ public class Info
     public int length { get; set; }
     public string? name { get; set; }
     public int piecelength { get; set; }
-
-    [JsonIgnore]
     public string? pieces { get; set; }
 }
 
