@@ -90,7 +90,6 @@ else if(command == "peers")
         var peersLength = int.Parse(contentString.Substring(0, contentString.IndexOf(":")));
 
         var peersBytes = contentBytes[(contentString.IndexOf(":") + 1)..(contentString.IndexOf(":") + 1 + peersLength)];
-        contentString = contentString[(contentString.IndexOf(":") + 1)..(contentString.IndexOf(":") + 1 + peersLength)];
 
         Console.WriteLine(peersBytes.Length);
         foreach ( var peer in peersBytes)
@@ -105,9 +104,6 @@ else if(command == "peers")
         {
             Console.WriteLine(GetIpFromBytes(peersBytes[(6 * i)..(6 * (i + 1))]));
         }
-
-        Console.WriteLine();
-        Console.WriteLine(contentString);
     }
 }
 else
