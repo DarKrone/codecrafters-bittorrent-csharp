@@ -41,10 +41,7 @@ else if (command == "info")
 
         var bencodeInfo = Bencode.Encode(infoDict);
 
-
-        var hashInfo = Bencode.Hash(bencodeInfo);
-
-
+        var hashInfo = Bencode.GetInfoHash(bytes, text);
 
         Console.WriteLine($"Tracker URL: {metaInfo.announce}\nLength: {metaInfo?.info?.length}\nInfo Hash: {hashInfo}"); 
     }
@@ -74,9 +71,13 @@ public class Info
 
 public class Bencode()
 {
-    public static string Hash(string input)
+    public static string GetInfoHash(byte[] bytes, string stream)
     {
-        return Convert.ToHexString(SHA1.HashData(Encoding.ASCII.GetBytes(input)));
+        const string infoHashMark = "4:infod";
+        var infoHashStart = stream.IndexOf(infoHashMark) + infoHashMark.Length - 1;
+        var chunk = bytes[infoHashStart..^1];
+        var hash = SHA1.HashData(chunk);
+        return Convert.ToHexString(hash).ToLower();
     }
 
     public static object Decode(string input)
