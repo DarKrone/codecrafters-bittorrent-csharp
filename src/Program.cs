@@ -77,12 +77,6 @@ else if(command == "peers")
         var contentBytes = await response.Content.ReadAsByteArrayAsync();
         var contentString = await response.Content.ReadAsStringAsync();
 
-        client.CancelPendingRequests();
-        client.Dispose();
-        //var temp = string.Join(", ", contentBytes);
-        //Console.WriteLine(temp);
-        //Console.WriteLine(temp.IndexOf("178, 62, 82"));
-        Console.WriteLine(contentString);
         var peersStart = "5:peers";
         contentBytes = contentBytes[(contentString.IndexOf(peersStart) + peersStart.Length)..];
         contentString = contentString[(contentString.IndexOf(peersStart) + peersStart.Length)..];
@@ -90,15 +84,6 @@ else if(command == "peers")
         var peersLength = int.Parse(contentString.Substring(0, contentString.IndexOf(":")));
 
         var peersBytes = contentBytes[(contentString.IndexOf(":") + 1)..(contentString.IndexOf(":") + 1 + peersLength)];
-
-        Console.WriteLine(peersBytes.Length);
-        foreach ( var peer in peersBytes)
-        {
-            Console.Write(peer + ", ");
-        }
-        Console.WriteLine();
-
-        Console.WriteLine();
 
         for(int i = 0; i < peersBytes.Length / 6 ; i++)
         {
