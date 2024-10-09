@@ -26,6 +26,7 @@ else if (command == "info")
         string? text = await reader.ReadToEndAsync();
         if (text != null)
         {
+            Console.WriteLine(text);
             var output = JsonSerializer.Serialize(Bencode.Decode(text));
             MetaInfo metaInfo = JsonSerializer.Deserialize<MetaInfo>(output)!;
             Console.WriteLine($"Tracker URL: {metaInfo.announce}\nLength: {metaInfo?.info?.length}"); 
