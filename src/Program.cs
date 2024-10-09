@@ -12,6 +12,8 @@ var (command, param) = args.Length switch
     _ => (args[0], args[1])
 };
 
+Console.OutputEncoding = System.Text.Encoding.UTF8;
+
 // Parse command and act accordingly
 if (command == "decode")
 {
@@ -28,6 +30,7 @@ else if (command == "info")
         {
             Console.WriteLine(text);
             var output = JsonSerializer.Serialize(Bencode.Decode(text));
+            Console.WriteLine(text);
             MetaInfo metaInfo = JsonSerializer.Deserialize<MetaInfo>(output)!;
             Console.WriteLine($"Tracker URL: {metaInfo.announce}\nLength: {metaInfo?.info?.length}"); 
         }
