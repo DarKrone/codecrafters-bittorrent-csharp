@@ -2,10 +2,9 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Net.Http;
-using System.Text.Encodings.Web;
 using System.Web;
-using Microsoft.Win32.SafeHandles;
+using System.Net.Sockets;
+using System.Net;
 
 // Parse arguments
 var (command, param) = args.Length switch
@@ -90,6 +89,67 @@ else if(command == "peers")
             Console.WriteLine(GetIpFromBytes(peersBytes[(6 * i)..(6 * (i + 1))]));
         }
     }
+}
+else if (command == "handshake")
+{
+    string path = $"{param}";
+    string address = args[2];
+
+    var ipString = address.Substring(0, address.IndexOf(':'));
+    byte[] ipBytes = new byte[4];
+    string[] ipNUmbers = ipString.Split('.');
+
+    for (int i = 0; i < ipNUmbers.Length; i++)
+    {
+        ipBytes[i] = Convert.ToByte(ipNUmbers[i]);
+    }
+
+    var bytesFile = File.ReadAllBytes(path);
+    string text = Encoding.ASCII.GetString(bytesFile);
+    byte[] hashInfo = Bencode.GetInfoHashBytes(bytesFile, text);
+    string urlEncoded = HttpUtility.UrlEncode(hashInfo);
+
+
+    byte[] peerId = new byte[20];
+    Random rnd = new Random();
+    rnd.NextBytes(peerId);
+
+
+    IPAddress ip = new IPAddress(ipBytes);
+    Console.WriteLine(ip);
+    var port = int.Parse(address.Substring(address.IndexOf(":") + 1));
+    Console.WriteLine(port);
+
+
+    using var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
+    var pstrLenght = 19;
+    var pstr = "BitTorrent protocol";
+    var reserved = new byte[8];
+
+    var handShakeMsg = new List<byte>();
+
+    handShakeMsg.Add((byte)pstrLenght);
+    handShakeMsg.AddRange(Encoding.ASCII.GetBytes(pstr));
+    handShakeMsg.AddRange(reserved);
+    handShakeMsg.AddRange(hashInfo);
+    handShakeMsg.AddRange(peerId);
+
+    using var tcpClient = new TcpClient();
+
+    await tcpClient.ConnectAsync(ip, port);
+
+    var stream = tcpClient.GetStream();
+
+    await stream.WriteAsync(handShakeMsg.ToArray());
+
+    var buffer = new byte[68];
+
+    var response = await stream.ReadAsync(buffer);
+
+    tcpClient.Close();
+
+    Console.WriteLine($"Peer ID: {Convert.ToHexString(buffer[(buffer.Length - 20)..]).ToLower()}");
 }
 else
 {
