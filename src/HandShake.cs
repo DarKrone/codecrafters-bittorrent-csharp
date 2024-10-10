@@ -21,7 +21,7 @@ namespace codecrafters_bittorrent.src
             {
                 Console.Write(b);
             }
-
+            Console.WriteLine();
             var pstrLenght = 19;
             var pstr = "BitTorrent protocol";
 
@@ -47,7 +47,6 @@ namespace codecrafters_bittorrent.src
 
         public static async Task<string> DoExtensionsHandShake(NetworkStream tcpStream)
         {
-
             var msgId = 20;
 
             var handShakeMsg = new List<byte>();
@@ -60,7 +59,7 @@ namespace codecrafters_bittorrent.src
 
             payload.Add("m", extensions);
             var bencodedDict = Bencode.Encode(payload);
-
+            Console.WriteLine(bencodedDict);
             handShakeMsg.AddRange(msgLengthPrefix);
             handShakeMsg.Add((byte)msgId);
             handShakeMsg.AddRange(Convert.FromBase64String(bencodedDict));
