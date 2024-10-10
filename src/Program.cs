@@ -125,6 +125,6 @@ internal class Program
 
     public static void ShowMagnetLinkInfo(MagnetLinkInfo linkInfo)
     {
-        Console.WriteLine($"Info Hash: {linkInfo.Hash}\n");
+        Console.WriteLine($"Tracker URL: {linkInfo.Url}\nInfo Hash: {linkInfo.Hash}");
     }
 }

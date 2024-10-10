@@ -12,7 +12,7 @@ namespace codecrafters_bittorrent.src
         public static MagnetLinkInfo ParseLink(string link)
         {
             string tempLink = link;
-            tempLink = tempLink[(tempLink.IndexOf("urn:btih") + 8)..];
+            tempLink = tempLink[(tempLink.IndexOf("urn:btih:") + 9)..];
             string urn = tempLink[..tempLink.IndexOf("&")];
 
             tempLink = tempLink[(tempLink.IndexOf("&") + 1)..];
