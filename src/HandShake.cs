@@ -11,11 +11,8 @@ namespace codecrafters_bittorrent.src
 {
     internal class HandShake
     {
-        public static async Task<string> DoHandShake(string path, string address, NetworkStream tcpStream)
+        public static async Task<string> DoHandShake(NetworkStream tcpStream, byte[] hashInfo, byte[] reservedBytes = null!)
         {
-            var bytesFile = File.ReadAllBytes(path);
-            string text = Encoding.ASCII.GetString(bytesFile);
-            byte[] hashInfo = Bencode.GetInfoHashBytes(bytesFile, text);
             string urlEncoded = HttpUtility.UrlEncode(hashInfo);
 
             byte[] peerId = new byte[20];
@@ -24,13 +21,15 @@ namespace codecrafters_bittorrent.src
 
             var pstrLenght = 19;
             var pstr = "BitTorrent protocol";
-            var reserved = new byte[8];
+
+            if (reservedBytes == null)
+                reservedBytes = new byte[8];
 
             var handShakeMsg = new List<byte>();
 
             handShakeMsg.Add((byte)pstrLenght);
             handShakeMsg.AddRange(Encoding.ASCII.GetBytes(pstr));
-            handShakeMsg.AddRange(reserved);
+            handShakeMsg.AddRange(reservedBytes);
             handShakeMsg.AddRange(hashInfo);
             handShakeMsg.AddRange(peerId);
 

@@ -23,15 +23,11 @@ namespace codecrafters_bittorrent.src
 
         public static MetaInfo GetInfo(string path)
         {
-            var bytes = ReadWriteFile.ReadBytesFromFile(path);
-
             string text = ReadWriteFile.ReadStringFromFile(path);
 
             var output = JsonSerializer.Serialize(Bencode.Decode(text));
 
             MetaInfo metaInfo = JsonSerializer.Deserialize<MetaInfo>(output)!;
-
-            var hashInfo = Bencode.GetInfoHashString(bytes, text);
 
             return metaInfo;
         }

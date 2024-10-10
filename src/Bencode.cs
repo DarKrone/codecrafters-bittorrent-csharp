@@ -5,14 +5,16 @@ namespace codecrafters_bittorrent.src
 {
     public class Bencode
     {
-        public static string GetInfoHashString(byte[] bytes, string stream)
+        public static string GetInfoHashString(string torrentFileName)
         {
-            var hash = GetInfoHashBytes(bytes, stream);
+            var hash = GetInfoHashBytes(torrentFileName);
             return Convert.ToHexString(hash).ToLower();
         }
 
-        public static byte[] GetInfoHashBytes(byte[] bytes, string stream)
+        public static byte[] GetInfoHashBytes(string torrentFileName)
         {
+            var bytes = ReadWriteFile.ReadBytesFromFile(torrentFileName);
+            var stream = ReadWriteFile.ReadStringFromFile(torrentFileName);
             const string infoHashMark = "4:infod";
             var infoHashStart = stream.IndexOf(infoHashMark) + infoHashMark.Length - 1;
             var chunk = bytes[infoHashStart..^1];
@@ -20,13 +22,17 @@ namespace codecrafters_bittorrent.src
             return hash;
         }
 
-        public static string[] GetPieceHashes(long length, long pieceLength, byte[] bytes, string streamText)
+        public static string[] GetPieceHashes(string torrentFileName)
         {
-            string[] pieceHashes = new string[(int)Math.Ceiling((double)length / pieceLength)];
+            MetaInfo metaInfo = MetaInfo.GetInfo(torrentFileName);
+            var bytes = ReadWriteFile.ReadBytesFromFile(torrentFileName);
+            var stream = ReadWriteFile.ReadStringFromFile(torrentFileName);
+
+            string[] pieceHashes = new string[(int)Math.Ceiling((double)metaInfo.Info.Length / metaInfo.Info.PieceLength)];
 
             const string piecesMark = "6:pieces";
-            var piecesBytesStart = bytes[(streamText.IndexOf(piecesMark) + piecesMark.Length - 1)..];
-            var piecesStreamStart = streamText[(streamText.IndexOf(piecesMark) + piecesMark.Length - 1)..];
+            var piecesBytesStart = bytes[(stream.IndexOf(piecesMark) + piecesMark.Length - 1)..];
+            var piecesStreamStart = stream[(stream.IndexOf(piecesMark) + piecesMark.Length - 1)..];
             var chunk = piecesBytesStart[(piecesStreamStart.IndexOf(":") + 1)..^1];
             var pieceChunk = 20;
 

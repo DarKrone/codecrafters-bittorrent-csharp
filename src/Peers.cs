@@ -9,33 +9,26 @@ namespace codecrafters_bittorrent.src
 {
     internal class Peers
     {
-        public static async Task<string[]> GetPeers(string path)
+        public static async Task<string[]> GetPeers(byte[] hashInfo, string leftLength, string url)
         {
             HttpClient client = new HttpClient();
-            var bytes = ReadWriteFile.ReadBytesFromFile(path);
-            string text = ReadWriteFile.ReadStringFromFile(path);
-            var hashInfo = Bencode.GetInfoHashBytes(bytes, text);
 
-            MetaInfo metaInfo = MetaInfo.GetInfo(path);
-
-            var urlEncoded = HttpUtility.UrlEncode(hashInfo);
+            var hashEncoded = HttpUtility.UrlEncode(hashInfo);
             var queryParameters = new Dictionary<string, string>
             {
-                {"info_hash", urlEncoded},
+                {"info_hash", hashEncoded},
                 {"peer_id", "12345678912345678900"},
                 {"port", "6881"},
                 {"uploaded", "0"},
                 {"downloaded", "0"},
-                {"left", metaInfo.Info.Length.ToString()},
+                {"left", leftLength},
                 {"compact", "1"},
             };
 
             var queryString = string.Join("&", queryParameters.Select(x => $"{x.Key}={x.Value}"));
-            var url = $"{metaInfo.Announce}?{queryString}";
-            var response = await client.GetAsync(url);
+            var response = await client.GetAsync($"{url}?{queryString}");
             var contentBytes = await response.Content.ReadAsByteArrayAsync();
             var contentString = await response.Content.ReadAsStringAsync();
-
             var peersStart = "5:peers";
             contentBytes = contentBytes[(contentString.IndexOf(peersStart) + peersStart.Length)..];
             contentString = contentString[(contentString.IndexOf(peersStart) + peersStart.Length)..];
@@ -51,6 +44,14 @@ namespace codecrafters_bittorrent.src
                 peers[i] = GetIpFromBytes(peersBytes[(6 * i)..(6 * (i + 1))]);
             }
             return peers;
+        }
+
+        public static Task<string[]> GetPeers(string torrentFileName)
+        {
+            MetaInfo metaInfo = MetaInfo.GetInfo(torrentFileName);
+            var hashInfo = Bencode.GetInfoHashBytes(torrentFileName);
+
+            return GetPeers(hashInfo, metaInfo.Info.Length.ToString(), metaInfo.Announce!);
         }
 
         public static string GetIpFromBytes(byte[] bytes)

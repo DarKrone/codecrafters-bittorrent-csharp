@@ -37,6 +37,9 @@ internal class Program
             case "magnet_parse":
                 ShowMagnetLinkInfo(MagnetLink.ParseLink(args[1]));
                 break;
+            case "magnet_handshake":
+                await ShowMagnetLinkPeerId(MagnetLink.ParseLink(args[1]));
+                break;
             default:
                 throw new InvalidOperationException($"Invalid command: {command}");
         }
@@ -51,11 +54,9 @@ internal class Program
     private static void ShowInfo(string torrentFileName)
     {
         MetaInfo metaInfo = MetaInfo.GetInfo(torrentFileName);
-        var bytes = ReadWriteFile.ReadBytesFromFile(torrentFileName);
-        var text = ReadWriteFile.ReadStringFromFile(torrentFileName);
-        var hashInfo = Bencode.GetInfoHashString(bytes, text);
+        var hashInfo = Bencode.GetInfoHashString(torrentFileName);
 
-        var pieceHashes = Bencode.GetPieceHashes(metaInfo.Info.Length, metaInfo.Info.PieceLength, bytes, text);
+        var pieceHashes = Bencode.GetPieceHashes(torrentFileName);
 
         Console.WriteLine($"Tracker URL: {metaInfo.Announce}\nLength: {metaInfo?.Info?.Length}\nInfo Hash: {hashInfo}" +
             $"\nPiece Length: {metaInfo?.Info.PieceLength}\nPiece Hashes:\n" +
@@ -79,7 +80,7 @@ internal class Program
 
         await tcpClient.ConnectAsync(addressAndPort.Item1, addressAndPort.Item2);
         var stream = tcpClient.GetStream();
-        var peerID = HandShake.DoHandShake(torrentFileName, address!, stream).Result;
+        var peerID = HandShake.DoHandShake(stream, Bencode.GetInfoHashBytes(torrentFileName)).Result;
 
         tcpClient.Close();
         Console.WriteLine($"Peer ID: {peerID}");
@@ -87,11 +88,8 @@ internal class Program
 
     private static async Task DownloadFile(string outputFlag, string saveFileLocation, string torrentFileName, int pieceIndex) // if need download all pieces: pieceIndex = -1
     {
+        var pieceHashes = Bencode.GetPieceHashes(torrentFileName);
         MetaInfo metaInfo = MetaInfo.GetInfo(torrentFileName);
-        var bytes = ReadWriteFile.ReadBytesFromFile(torrentFileName);
-        var text = ReadWriteFile.ReadStringFromFile(torrentFileName);
-        var pieceHashes = Bencode.GetPieceHashes(metaInfo.Info.Length, metaInfo.Info.PieceLength, bytes, text);
-
         var tcpClient = new TcpClient();
 
         var peers = Peers.GetPeers(torrentFileName);
@@ -102,21 +100,21 @@ internal class Program
         await tcpClient.ConnectAsync(addressAndPort.Item1, addressAndPort.Item2);
 
         var stream = tcpClient.GetStream();
-        var peerID = HandShake.DoHandShake(torrentFileName, address!, stream).Result;
+        var peerID = HandShake.DoHandShake(stream, Bencode.GetInfoHashBytes(torrentFileName)).Result;
         await Download.GetReadyToDownload(stream);
         if (pieceIndex == -1)
         {
             List<byte> combinedPieces = new List<byte>();
             for (int i = 0; i < pieceHashes.Length; i++)
             {
-                var filePiece = await codecrafters_bittorrent.src.Download.DownloadPiece(stream, i, metaInfo, pieceHashes[i]);
+                var filePiece = await Download.DownloadPiece(stream, i, metaInfo, pieceHashes[i]);
                 combinedPieces.AddRange(filePiece);
             }
             ReadWriteFile.WriteBytesToFile(saveFileLocation, combinedPieces.ToArray());
         }
         else
         {
-            var filePiece = await codecrafters_bittorrent.src.Download.DownloadPiece(stream, pieceIndex, metaInfo, pieceHashes[pieceIndex]);
+            var filePiece = await Download.DownloadPiece(stream, pieceIndex, metaInfo, pieceHashes[pieceIndex]);
             ReadWriteFile.WriteBytesToFile(saveFileLocation, filePiece);
         }
 
@@ -126,5 +124,24 @@ internal class Program
     public static void ShowMagnetLinkInfo(MagnetLinkInfo linkInfo)
     {
         Console.WriteLine($"Tracker URL: {linkInfo.Url}\nInfo Hash: {linkInfo.Hash}");
+    }
+
+    public static async Task ShowMagnetLinkPeerId(MagnetLinkInfo linkInfo)
+    {
+        TcpClient tcpClient = new TcpClient();
+        var peers = Peers.GetPeers(Convert.FromHexString(linkInfo.Hash), "999", linkInfo.Url).Result;
+
+        var addressAndPort = Address.GetAddressFromIPv4(peers[2]);
+
+        await tcpClient.ConnectAsync(addressAndPort.Item1, addressAndPort.Item2);
+        var stream = tcpClient.GetStream();
+
+        var reservedBytes = new byte[8];
+        reservedBytes[5] = 16;
+
+        string peerId = await HandShake.DoHandShake(stream, Convert.FromHexString(linkInfo.Hash), reservedBytes);
+        tcpClient.Close();
+
+        Console.WriteLine("Peer ID: " + peerId);
     }
 }
