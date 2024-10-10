@@ -62,7 +62,7 @@ namespace codecrafters_bittorrent.src
             Console.WriteLine(bencodedDict);
             handShakeMsg.AddRange(msgLengthPrefix);
             handShakeMsg.Add((byte)msgId);
-            handShakeMsg.AddRange(Convert.FromBase64String(bencodedDict));
+            handShakeMsg.AddRange(Encoding.ASCII.GetBytes(bencodedDict));
 
             await tcpStream.WriteAsync(handShakeMsg.ToArray());
 
