@@ -15,36 +15,46 @@ namespace codecrafters_bittorrent.src
     {
         public static async Task GetReadyToDownload(NetworkStream tcpStream)
         {
-            List<byte> sendResponse = new List<byte>();
+            await GetBitfield(tcpStream);
 
+        }
+
+        public static async Task<bool> GetBitfield(NetworkStream tcpStream)
+        {
             var buffer = new byte[4096];
             var response = await tcpStream.ReadAsync(buffer);
 
             if (buffer[4] == Convert.ToByte("5"))
             {
-                Console.WriteLine("Get bitfield");
+                return true;
             }
             else
             {
                 throw new Exception("Peer not bitfield");
             }
+        }
+
+        public static async Task<bool> GetUnchoke(NetworkStream tcpStream)
+        {
+            List<byte> sendResponse = new List<byte>();
 
             sendResponse.AddRange(BitConverter.GetBytes(5).ToArray());
             sendResponse.Add(Convert.ToByte("2"));
+
             await tcpStream.WriteAsync(sendResponse.ToArray());
             sendResponse.Clear();
 
-            response = await tcpStream.ReadAsync(buffer);
+            var buffer = new byte[4096];
+            var response = await tcpStream.ReadAsync(buffer);
 
             if (buffer[4] == Convert.ToByte("1"))
             {
-                Console.WriteLine("Get unchoke");
+                return true;
             }
             else
             {
                 throw new Exception("Peer not unchoke");
             }
-
         }
 
         public static async Task<byte[]> DownloadPiece(NetworkStream tcpStream, int pieceIndex, MetaInfo metaInfo, string neededHash)

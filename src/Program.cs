@@ -6,6 +6,7 @@ using System.Net;
 using codecrafters_bittorrent.src;
 using System.Net.Http;
 using System.Security.Cryptography;
+using System;
 
 internal class Program
 {
@@ -80,10 +81,10 @@ internal class Program
 
         await tcpClient.ConnectAsync(addressAndPort.Item1, addressAndPort.Item2);
         var stream = tcpClient.GetStream();
-        var peerID = HandShake.DoHandShake(stream, Bencode.GetInfoHashBytes(torrentFileName)).Result;
+        var handshakeMsg = HandShake.DoHandShake(stream, Bencode.GetInfoHashBytes(torrentFileName)).Result;
 
         tcpClient.Close();
-        Console.WriteLine($"Peer ID: {peerID}");
+        Console.WriteLine($"Peer ID: {handshakeMsg[(handshakeMsg.Length - 20)..]}");
     }
 
     private static async Task DownloadFile(string outputFlag, string saveFileLocation, string torrentFileName, int pieceIndex) // if need download all pieces: pieceIndex = -1
@@ -100,7 +101,7 @@ internal class Program
         await tcpClient.ConnectAsync(addressAndPort.Item1, addressAndPort.Item2);
 
         var stream = tcpClient.GetStream();
-        var peerID = HandShake.DoHandShake(stream, Bencode.GetInfoHashBytes(torrentFileName)).Result;
+        var handshakeMsg = HandShake.DoHandShake(stream, Bencode.GetInfoHashBytes(torrentFileName)).Result;
         await Download.GetReadyToDownload(stream);
         if (pieceIndex == -1)
         {
@@ -128,20 +129,31 @@ internal class Program
 
     public static async Task ShowMagnetLinkPeerId(MagnetLinkInfo linkInfo)
     {
+        //Establish a TCP connection with a peer
         TcpClient tcpClient = new TcpClient();
         var peers = Peers.GetPeers(Convert.FromHexString(linkInfo.Hash), "999", linkInfo.Url).Result;
-
         var addressAndPort = Address.GetAddressFromIPv4(peers[0]);
-
         await tcpClient.ConnectAsync(addressAndPort.Item1, addressAndPort.Item2);
         var stream = tcpClient.GetStream();
 
+        //Send the base handshake message -- Receive the base handshake message
         var reservedBytes = new byte[8];
         reservedBytes[5] = 16;
+        string handshakeMsg = await HandShake.DoHandShake(stream, Convert.FromHexString(linkInfo.Hash), reservedBytes);
+        string extensionsString = handshakeMsg.Skip(20).Take(16).ToString()!;
+        bool supportsExtensions = extensionsString[10] == '1';
 
-        string peerId = await HandShake.DoHandShake(stream, Convert.FromHexString(linkInfo.Hash), reservedBytes);
+        //Send the bitfield message (safe to ignore in this challenge) -- Receive the bitfield message
+        await Download.GetBitfield(stream);
+
+        //If the peer supports extensions (based on the reserved bit in the base handshake):
+        if (supportsExtensions)
+        {
+            //Send the extension handshake message
+            await HandShake.DoExtensionsHandShake(stream);
+        }
+
+        Console.WriteLine($"Peer ID: {handshakeMsg[(handshakeMsg.Length - 20)..]}");
         tcpClient.Close();
-
-        Console.WriteLine("Peer ID: " + peerId);
     }
 }

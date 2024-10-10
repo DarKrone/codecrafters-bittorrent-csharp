@@ -13,8 +13,6 @@ namespace codecrafters_bittorrent.src
     {
         public static async Task<string> DoHandShake(NetworkStream tcpStream, byte[] hashInfo, byte[] reservedBytes = null!)
         {
-            string urlEncoded = HttpUtility.UrlEncode(hashInfo);
-
             byte[] peerId = new byte[20];
             Random rnd = new Random();
             rnd.NextBytes(peerId);
@@ -39,7 +37,36 @@ namespace codecrafters_bittorrent.src
 
             var response = await tcpStream.ReadAsync(buffer);
 
-            return Convert.ToHexString(buffer[(buffer.Length - 20)..]).ToLower();
+            return Convert.ToHexString(buffer).ToLower();
+        }
+
+        public static async Task<string> DoExtensionsHandShake(NetworkStream tcpStream)
+        {
+            var msgLengthPrefix = new byte[4] { 1, 1, 1, 1 };
+
+            var msgId = 20;
+
+            var handShakeMsg = new List<byte>();
+
+            handShakeMsg.AddRange(msgLengthPrefix);
+            handShakeMsg.Add((byte)msgId);
+
+            Dictionary<string, object> payload = new Dictionary<string, object>();
+            Dictionary<string, object> extensions = new Dictionary<string, object>();
+            extensions.Add("ut_metadata", 1);
+
+            payload.Add("m", extensions);
+            var bencodedDict = Bencode.Encode(payload);
+
+            handShakeMsg.AddRange(Convert.FromBase64String(bencodedDict));
+
+            await tcpStream.WriteAsync(handShakeMsg.ToArray());
+
+            var buffer = new byte[68];
+
+            var response = await tcpStream.ReadAsync(buffer);
+
+            return Convert.ToHexString(buffer).ToLower();
         }
     }
 }
