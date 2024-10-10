@@ -16,7 +16,7 @@ namespace codecrafters_bittorrent.src
         public static async Task GetReadyToDownload(NetworkStream tcpStream)
         {
             await GetBitfield(tcpStream);
-
+            await GetUnchoke(tcpStream);
         }
 
         public static async Task<bool> GetBitfield(NetworkStream tcpStream)

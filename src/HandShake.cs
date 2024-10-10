@@ -17,11 +17,6 @@ namespace codecrafters_bittorrent.src
             Random rnd = new Random();
             rnd.NextBytes(peerId);
 
-            foreach (byte b in peerId)
-            {
-                Console.Write(b);
-            }
-            Console.WriteLine();
             var pstrLenght = 19;
             var pstr = "BitTorrent protocol";
 
@@ -61,21 +56,20 @@ namespace codecrafters_bittorrent.src
 
             var msgLengthPrefix = BitConverter.GetBytes(byteDict.Length + 2).Reverse();
 
-            Console.WriteLine(bencodedDict);
             handShakeMsg.AddRange(msgLengthPrefix);
             handShakeMsg.Add((byte)msgId);
             handShakeMsg.Add(0);
             handShakeMsg.AddRange(Encoding.ASCII.GetBytes(bencodedDict));
 
-            foreach (var msg in handShakeMsg)
-            {
-                Console.Write(msg + " ");
-            }
-            Console.WriteLine();
             await tcpStream.WriteAsync(handShakeMsg.ToArray());
             Console.WriteLine("Msg sended");
 
-            return Convert.ToHexString(new byte[]{ 1,1,1}).ToLower();
+            var buffer = new byte[1024];
+
+            await tcpStream.ReadAsync(buffer);
+            Console.WriteLine("Msg received");
+
+            return Convert.ToHexString(buffer).ToLower();
         }
     }
 }
