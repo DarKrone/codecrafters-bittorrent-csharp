@@ -54,7 +54,10 @@ namespace codecrafters_bittorrent.src
             var bencodedDict = Bencode.Encode(payload);
 
             var msgLengthPrefix = BitConverter.GetBytes(bencodedDict.Length + 1);
-
+            foreach(var b in msgLengthPrefix)
+            {
+                Console.WriteLine(b);
+            }
 
             handShakeMsg.AddRange(msgLengthPrefix);
             handShakeMsg.Add((byte)msgId);
