@@ -69,7 +69,7 @@ namespace codecrafters_bittorrent.src
 
             var buffer = new byte[4096];
 
-            var response = await tcpStream.ReadAsync(buffer);
+            await tcpStream.ReadExactlyAsync(buffer);
 
             return Convert.ToHexString(buffer).ToLower();
         }
