@@ -17,6 +17,11 @@ namespace codecrafters_bittorrent.src
             Random rnd = new Random();
             rnd.NextBytes(peerId);
 
+            foreach (byte b in peerId)
+            {
+                Console.Write(b);
+            }
+
             var pstrLenght = 19;
             var pstr = "BitTorrent protocol";
 
