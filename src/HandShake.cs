@@ -47,18 +47,13 @@ namespace codecrafters_bittorrent.src
 
         public static async Task<string> DoExtensionsHandShake(NetworkStream tcpStream)
         {
-            var buffer = new byte[4096];
-
-            await tcpStream.ReadExactlyAsync(buffer);
-
-
             var msgId = 20;
 
             var handShakeMsg = new List<byte>();
 
             Dictionary<string, object> payload = new Dictionary<string, object>();
             Dictionary<string, object> extensions = new Dictionary<string, object>();
-            extensions.Add("ut_metadata", 1);
+            extensions.Add("ut_metadata", 16);
 
             var msgLengthPrefix = new byte[4] { 1, 1, 1, 1 };
 
@@ -72,7 +67,7 @@ namespace codecrafters_bittorrent.src
             await tcpStream.WriteAsync(handShakeMsg.ToArray());
             Console.WriteLine("Msg sended");
 
-            return Convert.ToHexString(buffer).ToLower();
+            return Convert.ToHexString(new byte[]{ 1,1,1}).ToLower();
         }
     }
 }
