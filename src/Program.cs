@@ -149,8 +149,10 @@ internal class Program
         //If the peer supports extensions (based on the reserved bit in the base handshake):
         if (supportsExtensions)
         {
+            Console.WriteLine("Support extensions");
             //Send the extension handshake message
-            await HandShake.DoExtensionsHandShake(stream);
+            var extHandshakeMsg = await HandShake.DoExtensionsHandShake(stream);
+            Console.WriteLine(extHandshakeMsg);
         }
 
         Console.WriteLine($"Peer ID: {handshakeMsg[(handshakeMsg.Length - 20)..]}");
