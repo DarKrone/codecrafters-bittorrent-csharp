@@ -153,7 +153,6 @@ internal class Program
             Console.WriteLine("Support extensions");
             //Send the extension handshake message
             var extHandshakeMsg = HandShake.DoExtensionsHandShake(stream);
-            Console.WriteLine(extHandshakeMsg);
         }
 
         Console.WriteLine($"Peer ID: {handshakeMsg[(handshakeMsg.Length - 40)..]}");

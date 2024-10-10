@@ -61,13 +61,16 @@ namespace codecrafters_bittorrent.src
             handShakeMsg.Add(0);
             handShakeMsg.AddRange(Encoding.ASCII.GetBytes(bencodedDict));
 
+            foreach (var msg in handShakeMsg)
+            {
+                Console.Write(msg + " ");
+            }
+
             await tcpStream.WriteAsync(handShakeMsg.ToArray());
-            Console.WriteLine("Msg sended");
 
             var buffer = new byte[1024];
 
             await tcpStream.ReadExactlyAsync(buffer);
-            Console.WriteLine("Msg received");
 
             return Convert.ToHexString(buffer).ToLower();
         }
