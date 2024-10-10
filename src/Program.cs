@@ -130,10 +130,10 @@ internal class Program
     public static async Task ShowMagnetLinkPeerId(MagnetLinkInfo linkInfo)
     {
         //Establish a TCP connection with a peer
-        TcpClient tcpClient = new TcpClient();
         var peers = Peers.GetPeers(Convert.FromHexString(linkInfo.Hash), "999", linkInfo.Url).Result;
         for (int i = 0; i < peers.Length; i++)
         {
+            TcpClient tcpClient = new TcpClient();
             var addressAndPort = Address.GetAddressFromIPv4(peers[i]);
             await tcpClient.ConnectAsync(addressAndPort.Item1, addressAndPort.Item2);
             var stream = tcpClient.GetStream();
@@ -158,7 +158,7 @@ internal class Program
             }
 
             Console.WriteLine($"Peer ID: {handshakeMsg[(handshakeMsg.Length - 20)..]}");
+            tcpClient.Close();
         }
-        tcpClient.Close();
     }
 }
