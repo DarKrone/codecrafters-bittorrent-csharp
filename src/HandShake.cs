@@ -42,22 +42,22 @@ namespace codecrafters_bittorrent.src
 
         public static async Task<string> DoExtensionsHandShake(NetworkStream tcpStream)
         {
-            var msgLengthPrefix = new byte[4] { 1, 1, 1, 1 };
 
             var msgId = 20;
 
             var handShakeMsg = new List<byte>();
 
-            handShakeMsg.AddRange(msgLengthPrefix);
-            handShakeMsg.Add((byte)msgId);
-
             Dictionary<string, object> payload = new Dictionary<string, object>();
             Dictionary<string, object> extensions = new Dictionary<string, object>();
             extensions.Add("ut_metadata", 1);
-
             payload.Add("m", extensions);
             var bencodedDict = Bencode.Encode(payload);
 
+            var msgLengthPrefix = BitConverter.GetBytes(bencodedDict.Length + 1);
+
+
+            handShakeMsg.AddRange(msgLengthPrefix);
+            handShakeMsg.Add((byte)msgId);
             handShakeMsg.AddRange(Convert.FromBase64String(bencodedDict));
 
             await tcpStream.WriteAsync(handShakeMsg.ToArray());

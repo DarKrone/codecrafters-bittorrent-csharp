@@ -157,7 +157,7 @@ internal class Program
                 Console.WriteLine(extHandshakeMsg);
             }
 
-            Console.WriteLine($"Peer ID: {handshakeMsg[(handshakeMsg.Length - 20)..]}");
+            Console.WriteLine($"Peer ID: {handshakeMsg[(handshakeMsg.Length - 40)..]}");
             tcpClient.Close();
         }
     }
