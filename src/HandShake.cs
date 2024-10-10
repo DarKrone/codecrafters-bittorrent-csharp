@@ -67,7 +67,7 @@ namespace codecrafters_bittorrent.src
             await tcpStream.WriteAsync(handShakeMsg.ToArray());
             Console.WriteLine("Msg sended");
 
-            var buffer = new byte[68];
+            var buffer = new byte[4096];
 
             var response = await tcpStream.ReadAsync(buffer);
 
