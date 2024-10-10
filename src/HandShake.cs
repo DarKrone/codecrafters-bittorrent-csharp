@@ -50,14 +50,11 @@ namespace codecrafters_bittorrent.src
             Dictionary<string, object> payload = new Dictionary<string, object>();
             Dictionary<string, object> extensions = new Dictionary<string, object>();
             extensions.Add("ut_metadata", 1);
+
+            var msgLengthPrefix = new byte[4] { 1, 1, 1, 1 };
+
             payload.Add("m", extensions);
             var bencodedDict = Bencode.Encode(payload);
-
-            var msgLengthPrefix = BitConverter.GetBytes(bencodedDict.Length + 1);
-            foreach(var b in msgLengthPrefix)
-            {
-                Console.WriteLine(b);
-            }
 
             handShakeMsg.AddRange(msgLengthPrefix);
             handShakeMsg.Add((byte)msgId);
