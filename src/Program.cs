@@ -132,30 +132,33 @@ internal class Program
         //Establish a TCP connection with a peer
         TcpClient tcpClient = new TcpClient();
         var peers = Peers.GetPeers(Convert.FromHexString(linkInfo.Hash), "999", linkInfo.Url).Result;
-        var addressAndPort = Address.GetAddressFromIPv4(peers[0]);
-        await tcpClient.ConnectAsync(addressAndPort.Item1, addressAndPort.Item2);
-        var stream = tcpClient.GetStream();
-
-        //Send the base handshake message -- Receive the base handshake message
-        var reservedBytes = new byte[8];
-        reservedBytes[5] = 16;
-        string handshakeMsg = await HandShake.DoHandShake(stream, Convert.FromHexString(linkInfo.Hash), reservedBytes);
-        string extensionsString = handshakeMsg.Skip(20).Take(16).ToString()!;
-        bool supportsExtensions = extensionsString[10] == '1';
-
-        //Send the bitfield message (safe to ignore in this challenge) -- Receive the bitfield message
-        await Download.GetBitfield(stream);
-
-        //If the peer supports extensions (based on the reserved bit in the base handshake):
-        if (supportsExtensions)
+        for (int i = 0; i < peers.Length; i++)
         {
-            Console.WriteLine("Support extensions");
-            //Send the extension handshake message
-            var extHandshakeMsg = await HandShake.DoExtensionsHandShake(stream);
-            Console.WriteLine(extHandshakeMsg);
-        }
+            var addressAndPort = Address.GetAddressFromIPv4(peers[i]);
+            await tcpClient.ConnectAsync(addressAndPort.Item1, addressAndPort.Item2);
+            var stream = tcpClient.GetStream();
 
-        Console.WriteLine($"Peer ID: {handshakeMsg[(handshakeMsg.Length - 20)..]}");
+            //Send the base handshake message -- Receive the base handshake message
+            var reservedBytes = new byte[8];
+            reservedBytes[5] = 16;
+            string handshakeMsg = await HandShake.DoHandShake(stream, Convert.FromHexString(linkInfo.Hash), reservedBytes);
+            string extensionsString = handshakeMsg.Skip(20).Take(16).ToString()!;
+            bool supportsExtensions = extensionsString[10] == '1';
+
+            //Send the bitfield message (safe to ignore in this challenge) -- Receive the bitfield message
+            await Download.GetBitfield(stream);
+
+            //If the peer supports extensions (based on the reserved bit in the base handshake):
+            if (supportsExtensions)
+            {
+                Console.WriteLine("Support extensions");
+                //Send the extension handshake message
+                var extHandshakeMsg = await HandShake.DoExtensionsHandShake(stream);
+                Console.WriteLine(extHandshakeMsg);
+            }
+
+            Console.WriteLine($"Peer ID: {handshakeMsg[(handshakeMsg.Length - 20)..]}");
+        }
         tcpClient.Close();
     }
 }
