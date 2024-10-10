@@ -144,6 +144,7 @@ internal class Program
             string handshakeMsg = await HandShake.DoHandShake(stream, Convert.FromHexString(linkInfo.Hash), reservedBytes);
             string extensionsString = handshakeMsg.Skip(20).Take(16).ToString()!;
             bool supportsExtensions = extensionsString[10] == '1';
+            supportsExtensions = true;
 
             //Send the bitfield message (safe to ignore in this challenge) -- Receive the bitfield message
             await Download.GetBitfield(stream);
