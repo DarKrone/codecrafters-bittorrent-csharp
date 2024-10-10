@@ -14,5 +14,10 @@ namespace codecrafters_bittorrent.src
             var bytes = File.ReadAllBytes(path);
             return Encoding.ASCII.GetString(bytes);
         }
+
+        public static void WriteBytesToFile(string path, byte[] bytes)
+        {
+            File.WriteAllBytes(path, bytes);
+        }
     }
 }
