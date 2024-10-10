@@ -65,6 +65,7 @@ namespace codecrafters_bittorrent.src
             handShakeMsg.AddRange(Encoding.UTF8.GetBytes(bencodedDict));
 
             await tcpStream.WriteAsync(handShakeMsg.ToArray());
+            Console.WriteLine("Msg sended");
 
             var buffer = new byte[68];
 
