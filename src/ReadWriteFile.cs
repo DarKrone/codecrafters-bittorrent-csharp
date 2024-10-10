@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 
 namespace codecrafters_bittorrent.src
 {
-    internal class ReadFile
+    internal class ReadWriteFile
     {
         public static byte[] ReadBytesFromFile(string path)
         {
@@ -17,6 +13,11 @@ namespace codecrafters_bittorrent.src
         {
             var bytes = File.ReadAllBytes(path);
             return Encoding.ASCII.GetString(bytes);
+        }
+
+        public static void WriteBytesToFile(string path, byte[] bytes)
+        {
+            File.WriteAllBytes(path, bytes);
         }
     }
 }

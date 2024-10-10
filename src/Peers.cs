@@ -12,8 +12,8 @@ namespace codecrafters_bittorrent.src
         public static async Task<string[]> GetPeers(string path)
         {
             HttpClient client = new HttpClient();
-            var bytes = ReadFile.ReadBytesFromFile(path);
-            string text = ReadFile.ReadStringFromFile(path);
+            var bytes = ReadWriteFile.ReadBytesFromFile(path);
+            string text = ReadWriteFile.ReadStringFromFile(path);
             var hashInfo = Bencode.GetInfoHashBytes(bytes, text);
 
             MetaInfo metaInfo = MetaInfo.GetInfo(path);
@@ -26,12 +26,12 @@ namespace codecrafters_bittorrent.src
                 {"port", "6881"},
                 {"uploaded", "0"},
                 {"downloaded", "0"},
-                {"left", metaInfo.info.length.ToString()},
+                {"left", metaInfo.Info.Length.ToString()},
                 {"compact", "1"},
             };
 
             var queryString = string.Join("&", queryParameters.Select(x => $"{x.Key}={x.Value}"));
-            var url = $"{metaInfo.announce}?{queryString}";
+            var url = $"{metaInfo.Announce}?{queryString}";
             var response = await client.GetAsync(url);
             var contentBytes = await response.Content.ReadAsByteArrayAsync();
             var contentString = await response.Content.ReadAsStringAsync();

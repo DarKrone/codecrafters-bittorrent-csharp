@@ -5,39 +5,49 @@ namespace codecrafters_bittorrent.src
 {
     public class MetaInfo
     {
-        public string? announce { get; set; }
-        public string? createdby { get; set; }
-        public Info info { get; set; }
+        [JsonPropertyName("announce")]
+        public string? Announce { get; set; }
+
+        [JsonPropertyName("created by")]
+        public string? CreatedBy { get; set; }
+
+        [JsonPropertyName("info")]
+        public Info Info { get; set; }
 
         public MetaInfo()
         {
-            announce = null;
-            createdby = null;
-            info = new Info();
+            Announce = null;
+            CreatedBy = null;
+            Info = new Info();
         }
 
         public static MetaInfo GetInfo(string path)
         {
-            var bytes = ReadFile.ReadBytesFromFile(path);
+            var bytes = ReadWriteFile.ReadBytesFromFile(path);
 
-            string text = ReadFile.ReadStringFromFile(path);
+            string text = ReadWriteFile.ReadStringFromFile(path);
 
             var output = JsonSerializer.Serialize(Bencode.Decode(text));
 
             MetaInfo metaInfo = JsonSerializer.Deserialize<MetaInfo>(output)!;
 
             var hashInfo = Bencode.GetInfoHashString(bytes, text);
-            return metaInfo;
 
+            return metaInfo;
         }
     }
     public class Info
     {
-        public int length { get; set; }
-        public string? name { get; set; }
+        [JsonPropertyName("length")]
+        public int Length { get; set; }
+
+        [JsonPropertyName("name")]
+        public string? Name { get; set; }
 
         [JsonPropertyName("piece length")]
-        public int piecelength { get; set; }
+        public int PieceLength { get; set; }
+
+        // Somehow its not parsing with JsonPropertyName
         public string? pieces { get; set; }
     }
 }

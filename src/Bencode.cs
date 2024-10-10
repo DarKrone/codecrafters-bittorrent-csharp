@@ -20,13 +20,13 @@ namespace codecrafters_bittorrent.src
             return hash;
         }
 
-        public static string[] GetPieceHashes(long length, long pieceLength, byte[] bytes, string stream)
+        public static string[] GetPieceHashes(long length, long pieceLength, byte[] bytes, string streamText)
         {
             string[] pieceHashes = new string[(int)Math.Ceiling((double)length / pieceLength)];
 
             const string piecesMark = "6:pieces";
-            var piecesBytesStart = bytes[(stream.IndexOf(piecesMark) + piecesMark.Length - 1)..];
-            var piecesStreamStart = stream[(stream.IndexOf(piecesMark) + piecesMark.Length - 1)..];
+            var piecesBytesStart = bytes[(streamText.IndexOf(piecesMark) + piecesMark.Length - 1)..];
+            var piecesStreamStart = streamText[(streamText.IndexOf(piecesMark) + piecesMark.Length - 1)..];
             var chunk = piecesBytesStart[(piecesStreamStart.IndexOf(":") + 1)..^1];
             var pieceChunk = 20;
 
