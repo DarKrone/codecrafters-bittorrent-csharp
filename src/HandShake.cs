@@ -11,7 +11,7 @@ namespace codecrafters_bittorrent.src
 {
     internal class HandShake
     {
-        public static async Task<string> DoHandShake(string path, string address, TcpClient tcpClient)
+        public static async Task<string> DoHandShake(string path, string address, NetworkStream tcpStream)
         {
             var bytesFile = File.ReadAllBytes(path);
             string text = Encoding.ASCII.GetString(bytesFile);
@@ -34,13 +34,11 @@ namespace codecrafters_bittorrent.src
             handShakeMsg.AddRange(hashInfo);
             handShakeMsg.AddRange(peerId);
 
-            var stream = tcpClient.GetStream();
-
-            await stream.WriteAsync(handShakeMsg.ToArray());
+            await tcpStream.WriteAsync(handShakeMsg.ToArray());
 
             var buffer = new byte[68];
 
-            var response = await stream.ReadAsync(buffer);
+            var response = await tcpStream.ReadAsync(buffer);
 
             return Convert.ToHexString(buffer[(buffer.Length - 20)..]).ToLower();
         }

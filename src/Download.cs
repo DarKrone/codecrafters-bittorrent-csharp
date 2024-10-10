@@ -13,14 +13,12 @@ namespace codecrafters_bittorrent.src
 {
     internal class Download
     {
-        public static async Task<byte[]> DownloadPiece(TcpClient tcpClient, int pieceIndex, MetaInfo metaInfo, string neededHash)
+        public static async Task GetReadyToDownload(NetworkStream tcpStream)
         {
             List<byte> sendResponse = new List<byte>();
 
-            var stream = tcpClient.GetStream();
-
             var buffer = new byte[4096];
-            var response = await stream.ReadAsync(buffer);
+            var response = await tcpStream.ReadAsync(buffer);
 
             if (buffer[4] == Convert.ToByte("5"))
             {
@@ -33,10 +31,10 @@ namespace codecrafters_bittorrent.src
 
             sendResponse.AddRange(BitConverter.GetBytes(5).ToArray());
             sendResponse.Add(Convert.ToByte("2"));
-            await stream.WriteAsync(sendResponse.ToArray());
+            await tcpStream.WriteAsync(sendResponse.ToArray());
             sendResponse.Clear();
 
-            response = await stream.ReadAsync(buffer);
+            response = await tcpStream.ReadAsync(buffer);
 
             if (buffer[4] == Convert.ToByte("1"))
             {
@@ -46,6 +44,12 @@ namespace codecrafters_bittorrent.src
             {
                 throw new Exception("Peer not unchoke");
             }
+
+        }
+
+        public static async Task<byte[]> DownloadPiece(NetworkStream tcpStream, int pieceIndex, MetaInfo metaInfo, string neededHash)
+        {
+            List<byte> sendResponse = new List<byte>();
 
             const int MAX_BLOCK_LENGTH = 16384;
 
@@ -63,7 +67,7 @@ namespace codecrafters_bittorrent.src
             {
                 throw new Exception("No downloadable blocks (16384) in piece");
             }
-
+            var buffer = new byte[4096];
             Console.WriteLine($"Start downloading {blocksCount} blocks, total blocks length - {pieceLength}");
 
             List<byte> receivedBlocks = new List<byte>();
@@ -77,11 +81,11 @@ namespace codecrafters_bittorrent.src
                 sendResponse.AddRange(BitConverter.GetBytes(pieceIndex).Reverse());
                 sendResponse.AddRange(BitConverter.GetBytes(MAX_BLOCK_LENGTH * i).Reverse());
                 sendResponse.AddRange(BitConverter.GetBytes(blockLength).Reverse());
-                await stream.WriteAsync(sendResponse.ToArray());
+                await tcpStream.WriteAsync(sendResponse.ToArray());
 
                 sendResponse.Clear();
                 buffer = new byte[blockLength + 13];
-                await stream.ReadExactlyAsync(buffer, 0, blockLength + 13);
+                await tcpStream.ReadExactlyAsync(buffer, 0, blockLength + 13);
                 receivedBlocks.AddRange(buffer.Skip(13));
                 Console.WriteLine($"Downloaded {i + 1} block. Length of block - {blockLength}");
             }

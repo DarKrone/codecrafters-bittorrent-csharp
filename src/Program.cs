@@ -55,8 +55,8 @@ internal class Program
             var addressAndPort = Address.GetAddressFromIPv4(address!);
 
             await tcpClient.ConnectAsync(addressAndPort.Item1, addressAndPort.Item2);
-
-            var peerID = HandShake.DoHandShake(torrentFileName, address!, tcpClient).Result;
+            var stream = tcpClient.GetStream();
+            var peerID = HandShake.DoHandShake(torrentFileName, address!, stream).Result;
 
             tcpClient.Close();
             Console.WriteLine($"Peer ID: {peerID}");
@@ -82,10 +82,45 @@ internal class Program
 
             await tcpClient.ConnectAsync(addressAndPort.Item1, addressAndPort.Item2);
 
-            var peerID = HandShake.DoHandShake(torrentFileName, address!, tcpClient).Result;
-
-            var filePiece = await Download.DownloadPiece(tcpClient, pieceIndex, metaInfo, pieceHashes[pieceIndex]);
+            var stream = tcpClient.GetStream();
+            var peerID = HandShake.DoHandShake(torrentFileName, address!, stream).Result;
+            await Download.GetReadyToDownload(stream);
+            var filePiece = await Download.DownloadPiece(stream, pieceIndex, metaInfo, pieceHashes[pieceIndex]);
             ReadWriteFile.WriteBytesToFile(pieceLocation, filePiece);
+
+            tcpClient.Close();
+        }
+        else if (command == "download")
+        {
+            var outputFlag = args[1];
+            var fileLocation = args[2];
+            var torrentFileName = args[3];
+
+            MetaInfo metaInfo = MetaInfo.GetInfo(torrentFileName);
+            var bytes = ReadWriteFile.ReadBytesFromFile(torrentFileName);
+            var text = ReadWriteFile.ReadStringFromFile(torrentFileName);
+            var pieceHashes = Bencode.GetPieceHashes(metaInfo.Info.Length, metaInfo.Info.PieceLength, bytes, text);
+
+            var tcpClient = new TcpClient();
+
+            var peers = Peers.GetPeers(torrentFileName);
+            var address = peers.Result[0];
+
+            var addressAndPort = Address.GetAddressFromIPv4(address!);
+
+            await tcpClient.ConnectAsync(addressAndPort.Item1, addressAndPort.Item2);
+
+
+            List<byte> combinedPieces = new List<byte>();
+            var stream = tcpClient.GetStream();
+            var peerID = HandShake.DoHandShake(torrentFileName, address!, stream).Result;
+            await Download.GetReadyToDownload(stream);
+            for (int i = 0; i < pieceHashes.Length; i++)
+            {
+                var filePiece = await Download.DownloadPiece(stream, i, metaInfo, pieceHashes[i]);
+                combinedPieces.AddRange(filePiece);
+            }
+            ReadWriteFile.WriteBytesToFile(fileLocation, combinedPieces.ToArray());
 
             tcpClient.Close();
         }
