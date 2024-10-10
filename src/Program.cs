@@ -131,7 +131,7 @@ internal class Program
         TcpClient tcpClient = new TcpClient();
         var peers = Peers.GetPeers(Convert.FromHexString(linkInfo.Hash), "999", linkInfo.Url).Result;
 
-        var addressAndPort = Address.GetAddressFromIPv4(peers[2]);
+        var addressAndPort = Address.GetAddressFromIPv4(peers[0]);
 
         await tcpClient.ConnectAsync(addressAndPort.Item1, addressAndPort.Item2);
         var stream = tcpClient.GetStream();
