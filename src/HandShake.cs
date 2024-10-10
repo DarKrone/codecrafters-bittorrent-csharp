@@ -53,23 +53,18 @@ namespace codecrafters_bittorrent.src
 
             Dictionary<string, object> payload = new Dictionary<string, object>();
             Dictionary<string, object> extensions = new Dictionary<string, object>();
+
             extensions.Add("ut_metadata", 16);
-
-
             payload.Add("m", extensions);
             var bencodedDict = Bencode.Encode(payload);
             var byteDict = Encoding.UTF8.GetBytes(bencodedDict);
-            Console.WriteLine(byteDict.Length + 1);
+
             var msgLengthPrefix = BitConverter.GetBytes(byteDict.Length + 1).Reverse();
-            foreach( var key in msgLengthPrefix)
-            {
-                Console.Write(key);
-            }
-            Console.WriteLine();
 
             Console.WriteLine(bencodedDict);
             handShakeMsg.AddRange(msgLengthPrefix);
             handShakeMsg.Add((byte)msgId);
+            handShakeMsg.Add(0);
             handShakeMsg.AddRange(Encoding.UTF8.GetBytes(bencodedDict));
 
             await tcpStream.WriteAsync(handShakeMsg.ToArray());
