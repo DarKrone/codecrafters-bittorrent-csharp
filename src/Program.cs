@@ -142,7 +142,7 @@ internal class Program
             var reservedBytes = new byte[8];
             reservedBytes[5] = 16;
             string handshakeMsg = await HandShake.DoHandShake(stream, Convert.FromHexString(linkInfo.Hash), reservedBytes);
-            Console.WriteLine(handshakeMsg);
+            Console.WriteLine(handshakeMsg.Skip(20).Take(16).ToString()!);
             string extensionsString = handshakeMsg.Skip(20).Take(16).ToString()!;
             bool supportsExtensions = extensionsString[10] == '1';
 
