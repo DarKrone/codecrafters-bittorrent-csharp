@@ -85,7 +85,7 @@ internal class Program
             var peerID = HandShake.DoHandShake(torrentFileName, address!, tcpClient).Result;
 
             var filePiece = await Download.DownloadPiece(tcpClient, pieceIndex, metaInfo, pieceHashes[pieceIndex]);
-            ReadWriteFile.WriteBytesToFile(pieceLocation, filePiece);
+
 
             tcpClient.Close();
         }
