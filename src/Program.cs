@@ -142,8 +142,9 @@ internal class Program
             var reservedBytes = new byte[8];
             reservedBytes[5] = 16;
             string handshakeMsg = await HandShake.DoHandShake(stream, Convert.FromHexString(linkInfo.Hash), reservedBytes);
-            Console.WriteLine(handshakeMsg[20..36]);
-            string extensionsString = handshakeMsg[20..36];
+            Console.WriteLine(handshakeMsg);
+            Console.WriteLine(handshakeMsg[40..56]);
+            string extensionsString = handshakeMsg[40..56];
             bool supportsExtensions = extensionsString[10] == '1';
 
             //Send the bitfield message (safe to ignore in this challenge) -- Receive the bitfield message
