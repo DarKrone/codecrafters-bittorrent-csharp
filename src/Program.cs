@@ -152,7 +152,7 @@ internal class Program
         {
             Console.WriteLine("Support extensions");
             //Send the extension handshake message
-            var extHandshakeMsg = await HandShake.DoExtensionsHandShake(stream);
+            var extHandshakeMsg = HandShake.DoExtensionsHandShake(stream);
             Console.WriteLine(extHandshakeMsg);
         }
 

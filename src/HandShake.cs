@@ -66,7 +66,7 @@ namespace codecrafters_bittorrent.src
 
             var buffer = new byte[1024];
 
-            await tcpStream.ReadAsync(buffer);
+            await tcpStream.ReadExactlyAsync(buffer);
             Console.WriteLine("Msg received");
 
             return Convert.ToHexString(buffer).ToLower();
