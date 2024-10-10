@@ -14,33 +14,31 @@ internal class Program
         var command = args[0];
 
         // Parse command and act accordingly
-        if (command == "decode")
+        switch (command)
         {
-            ShowDecode(args[1]);
-        }
-        else if (command == "info")
-        {
-            ShowInfo(args[1]);
-        }
-        else if (command == "peers")
-        {
-            ShowPeers(args[1]);
-        }
-        else if (command == "handshake")
-        {
-            await ShowPeerId(args[1], args[2]);
-        }
-        else if (command == "download_piece")
-        {
-            await DownloadFile(args[1], args[2], args[3], int.Parse(args[4]));
-        }
-        else if (command == "download")
-        {
-            await DownloadFile(args[1], args[2], args[3], -1); // -1 for download all pieces
-        }
-        else
-        {
-            throw new InvalidOperationException($"Invalid command: {command}");
+            case "decode":
+                ShowDecode(args[1]);
+                break;
+            case "info":
+                ShowInfo(args[1]);
+                break;
+            case "peers":
+                ShowPeers(args[1]);
+                break;
+            case "handshake":
+                await ShowPeerId(args[1], args[2]);
+                break;
+            case "download_piece":
+                await DownloadFile(args[1], args[2], args[3], int.Parse(args[4]));
+                break;
+            case "download":
+                await DownloadFile(args[1], args[2], args[3], -1); // -1 for download all pieces
+                break;
+            case "magnet_parse":
+                ShowMagnetLinkInfo(MagnetLink.ParseLink(args[1]));
+                break;
+            default:
+                throw new InvalidOperationException($"Invalid command: {command}");
         }
     }
 
@@ -123,5 +121,10 @@ internal class Program
         }
 
         tcpClient.Close();
+    }
+
+    public static void ShowMagnetLinkInfo(MagnetLinkInfo linkInfo)
+    {
+        Console.WriteLine($"Tracker URL: {linkInfo.Url}\nInfo Hash: {linkInfo.Hash}");
     }
 }
