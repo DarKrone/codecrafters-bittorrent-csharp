@@ -62,7 +62,7 @@ namespace codecrafters_bittorrent.src
             Console.WriteLine(bencodedDict);
             var byteDict = Encoding.UTF8.GetBytes(bencodedDict);
 
-            var msgLengthPrefix = BitConverter.GetBytes(byteDict.Length + 2).Reverse();
+            var msgLengthPrefix = BitConverter.GetBytes(byteDict.Length + 3).Reverse();
 
             handShakeMsg.AddRange(msgLengthPrefix);
             handShakeMsg.Add((byte)msgId);
@@ -78,6 +78,7 @@ namespace codecrafters_bittorrent.src
             Console.WriteLine();
             await tcpStream.WriteAsync(handShakeMsg.ToArray());
             Console.WriteLine("Handshake sended");
+            
 
             var buffer = new byte[1024];
             await tcpStream.ReadAsync(buffer);
