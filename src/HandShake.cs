@@ -79,7 +79,7 @@ namespace codecrafters_bittorrent.src
             Console.WriteLine("Handshake sended");
 
 
-            var buffer = new byte[32];
+            var buffer = new byte[4096];
 
             tcpStream.ReadExactly(buffer, 0, 4);
             Console.WriteLine("Handshake received");
