@@ -7,6 +7,7 @@ using codecrafters_bittorrent.src;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System;
+using System.Text.Json.Serialization;
 
 internal class Program
 {
@@ -143,6 +144,7 @@ internal class Program
         string handshakeMsg = await HandShake.DoHandShake(stream, Convert.FromHexString(linkInfo.Hash), reservedBytes);
         string extensionsString = handshakeMsg[40..56];
         bool supportsExtensions = extensionsString[10] == '1';
+        Console.WriteLine($"Peer ID: {handshakeMsg[(handshakeMsg.Length - 40)..]}");
 
         //Send the bitfield message (safe to ignore in this challenge) -- Receive the bitfield message
         await Download.GetBitfield(stream);
@@ -153,9 +155,24 @@ internal class Program
             Console.WriteLine("Support extensions");
             //Send the extension handshake message
             var extHandshakeMsg = await HandShake.DoExtensionsHandShake(stream);
+            var extHandshakeMsgBytes = Convert.FromHexString(extHandshakeMsg);
+
+            var msgPrefix = extHandshakeMsgBytes.Take(4);
+            var payloadLength = BitConverter.ToInt32((byte[])msgPrefix.Reverse());
+
+            string extHandshakePayload = Bencode.Encode(Encoding.UTF8.GetString((byte[])extHandshakeMsgBytes.Skip(5).Take(payloadLength)));
+
+            var payloadDict = JsonSerializer.Deserialize<Dictionary<string, object>>(extHandshakePayload)!;
+
+            Console.WriteLine(payloadDict);
+
+            if (payloadDict.TryGetValue("ut_metadata", out var metadata))
+            {
+                Console.WriteLine($"Peer Metadata Extension ID: {metadata}");
+            }
         }
 
-        Console.WriteLine($"Peer ID: {handshakeMsg[(handshakeMsg.Length - 40)..]}");
+
         tcpClient.Close();
     }
 }

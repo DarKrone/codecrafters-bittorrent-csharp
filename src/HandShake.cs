@@ -79,13 +79,14 @@ namespace codecrafters_bittorrent.src
 
             var buffer = new byte[4096];
 
-            if (tcpStream.DataAvailable)
+            while(true)
             {
+                buffer = new byte[4096];
                 await tcpStream.ReadAsync(buffer);
-                Console.WriteLine("Handshake received");
-                foreach (var item in buffer)
+                if (buffer[4] == 20)
                 {
-                    Console.Write(item + " ");
+                    Console.WriteLine("Handshake received");
+                    break;
                 }
             }
 
