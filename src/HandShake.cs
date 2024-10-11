@@ -68,13 +68,13 @@ namespace codecrafters_bittorrent.src
             handShakeMsg.Add((byte)msgId);
             handShakeMsg.Add((byte)0);
             handShakeMsg.AddRange(byteDict);
+            handShakeMsg[^3] = (byte)1;
 
             foreach (var item in handShakeMsg)
             {
                 Console.Write(item + " ");
             }
 
-            handShakeMsg[^3] = (byte)1;
             Console.WriteLine();
             await tcpStream.WriteAsync(handShakeMsg.ToArray());
             Console.WriteLine("Handshake sended");
