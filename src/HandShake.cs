@@ -79,7 +79,7 @@ namespace codecrafters_bittorrent.src
             await tcpStream.WriteAsync(handShakeMsg.ToArray());
             Console.WriteLine("Handshake sended");
 
-            var buffer = new byte[1024];
+            var buffer = new byte[128];
             await tcpStream.ReadAsync(buffer);
 
             if (buffer[4] != 0)
