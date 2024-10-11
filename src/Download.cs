@@ -23,6 +23,12 @@ namespace codecrafters_bittorrent.src
         {
             var buffer = new byte[4096];
             var response = await tcpStream.ReadAsync(buffer);
+            var temp = buffer[..10];
+            foreach (var item in temp)
+            {
+                Console.Write(item + " ");
+            }
+            Console.WriteLine();
 
             if (buffer[4] == Convert.ToByte("5"))
             {
