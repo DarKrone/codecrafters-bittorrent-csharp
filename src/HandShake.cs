@@ -67,8 +67,6 @@ namespace codecrafters_bittorrent.src
             handShakeMsg.AddRange(msgLengthPrefix);
             handShakeMsg.Add((byte)msgId);
             handShakeMsg.Add((byte)0);
-            handShakeMsg.AddRange(byteDict);
-            handShakeMsg[^4] = (byte)1;
 
             foreach (var item in handShakeMsg)
             {
