@@ -6,6 +6,9 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using static System.Net.Mime.MediaTypeNames;
+using System.Text.Json.Nodes;
+using System.Text.Json;
 
 namespace codecrafters_bittorrent.src
 {
@@ -46,26 +49,46 @@ namespace codecrafters_bittorrent.src
 
             var handShakeMsg = new List<byte>();
 
-            Dictionary<string, object> payload = new Dictionary<string, object>();
+            Dictionary<string, object> extensionMsg = new Dictionary<string, object>();
             Dictionary<string, object> extensions = new Dictionary<string, object>();
 
             extensions.Add("ut_metadata", 16);
-            payload.Add("m", extensions);
-            var bencodedDict = Bencode.Encode(payload);
+            extensionMsg.Add("m", extensions);
+            extensionMsg.Add("metadata_size", 0);
+            extensionMsg.Add("v", "innerBittorrent v0.0.9");
+
+            Console.WriteLine(JsonSerializer.Serialize(extensionMsg));
+
+            var bencodedDict = Bencode.Encode(extensionMsg);
+            Console.WriteLine(bencodedDict);
             var byteDict = Encoding.UTF8.GetBytes(bencodedDict);
 
             var msgLengthPrefix = BitConverter.GetBytes(byteDict.Length + 2).Reverse();
 
             handShakeMsg.AddRange(msgLengthPrefix);
             handShakeMsg.Add((byte)msgId);
-            handShakeMsg.Add(0);
-            handShakeMsg.AddRange(Encoding.ASCII.GetBytes(bencodedDict));
+            handShakeMsg.Add((byte)0);
+            handShakeMsg.AddRange(byteDict);
+
+            foreach (var item in handShakeMsg)
+            {
+                Console.Write(item + " ");
+            }
 
             await tcpStream.WriteAsync(handShakeMsg.ToArray());
+            Console.WriteLine("Handshake sended");
 
-            var buffer = new byte[1024];
 
-            await tcpStream.ReadExactlyAsync(buffer);
+            var buffer = new byte[32];
+
+            tcpStream.ReadExactly(buffer, 0, 4);
+            Console.WriteLine("Handshake received");
+
+
+            foreach (var item in buffer)
+            {
+                Console.Write(item + " ");
+            }
 
             return Convert.ToHexString(buffer).ToLower();
         }
