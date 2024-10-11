@@ -149,7 +149,10 @@ internal class Program
         Console.WriteLine($"Peer ID: {handshakeMsg[(handshakeMsg.Length - 40)..]}");
 
         //Send the bitfield message (safe to ignore in this challenge) -- Receive the bitfield message
-        //await Download.GetBitfield(stream);
+        if (!await Download.GetBitfield(stream))
+        {
+            return;
+        }
 
         //If the peer supports extensions (based on the reserved bit in the base handshake):
         if (supportsExtensions)

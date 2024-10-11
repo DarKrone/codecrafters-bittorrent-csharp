@@ -36,7 +36,7 @@ namespace codecrafters_bittorrent.src
             }
             else
             {
-                throw new Exception("Peer not bitfield");
+                return false;
             }
         }
 
@@ -59,7 +59,7 @@ namespace codecrafters_bittorrent.src
             }
             else
             {
-                throw new Exception("Peer not unchoke");
+                return false;
             }
         }
 
