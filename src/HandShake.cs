@@ -74,7 +74,7 @@ namespace codecrafters_bittorrent.src
                 Console.Write(item + " ");
             }
 
-
+            handShakeMsg[^3] = 1;
             Console.WriteLine();
             await tcpStream.WriteAsync(handShakeMsg.ToArray());
             Console.WriteLine("Handshake sended");
