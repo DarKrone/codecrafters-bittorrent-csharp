@@ -52,7 +52,7 @@ namespace codecrafters_bittorrent.src
             Dictionary<string, object> extensionMsg = new Dictionary<string, object>();
             Dictionary<string, object> extensions = new Dictionary<string, object>();
 
-            extensions.Add("ut_metadata", 254);
+            extensions.Add("ut_metadata", 1);
             extensionMsg.Add("m", extensions);
 
             Console.WriteLine(JsonSerializer.Serialize(extensionMsg));
