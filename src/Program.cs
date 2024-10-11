@@ -141,7 +141,9 @@ internal class Program
         //Send the base handshake message -- Receive the base handshake message
         var reservedBytes = new byte[8];
         reservedBytes[5] = 16;
-        string handshakeMsg = await HandShake.DoHandShake(stream, Convert.FromHexString(linkInfo.Hash), reservedBytes);
+        byte[] handshakeMsgBytes = await HandShake.DoHandShake(stream, Convert.FromHexString(linkInfo.Hash), reservedBytes);
+        string handshakeMsg = Convert.ToHexString(handshakeMsgBytes).ToLower();
+
         string extensionsString = handshakeMsg[40..56];
         bool supportsExtensions = extensionsString[10] == '1';
         Console.WriteLine($"Peer ID: {handshakeMsg[(handshakeMsg.Length - 40)..]}");
@@ -154,11 +156,12 @@ internal class Program
         {
             Console.WriteLine("Support extensions");
             //Send the extension handshake message
-            var extHandshakeMsg = await HandShake.DoExtensionsHandShake(stream);
-            var extHandshakeMsgBytes = Convert.FromHexString(extHandshakeMsg);
+            var extHandshakeMsgBytes = await HandShake.DoExtensionsHandShake(stream);
 
-            var msgPrefix = extHandshakeMsgBytes.Take(4);
-            var payloadLength = BitConverter.ToInt32((byte[])msgPrefix.Reverse());
+            var msgPrefix = extHandshakeMsgBytes[..4];
+            msgPrefix.Reverse();
+
+            var payloadLength = BitConverter.ToInt32(msgPrefix);
 
             string extHandshakePayload = Bencode.Encode(Encoding.UTF8.GetString((byte[])extHandshakeMsgBytes.Skip(5).Take(payloadLength)));
 

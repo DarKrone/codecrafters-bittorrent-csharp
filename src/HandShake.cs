@@ -14,7 +14,7 @@ namespace codecrafters_bittorrent.src
 {
     internal class HandShake
     {
-        public static async Task<string> DoHandShake(NetworkStream tcpStream, byte[] hashInfo, byte[] reservedBytes = null!)
+        public static async Task<byte[]> DoHandShake(NetworkStream tcpStream, byte[] hashInfo, byte[] reservedBytes = null!)
         {
             byte[] peerId = new byte[20];
             Random rnd = new Random();
@@ -40,10 +40,10 @@ namespace codecrafters_bittorrent.src
 
             var response = await tcpStream.ReadAsync(buffer);
 
-            return Convert.ToHexString(buffer).ToLower();
+            return buffer;
         }
 
-        public static async Task<string> DoExtensionsHandShake(NetworkStream tcpStream)
+        public static async Task<byte[]> DoExtensionsHandShake(NetworkStream tcpStream)
         {
             var msgId = 20;
 
@@ -86,7 +86,7 @@ namespace codecrafters_bittorrent.src
                 }
 
 
-            return Convert.ToHexString(buffer).ToLower();
+            return buffer;
         }
     }
 }
