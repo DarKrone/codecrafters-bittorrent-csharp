@@ -52,7 +52,7 @@ namespace codecrafters_bittorrent.src
             Dictionary<string, object> extensionMsg = new Dictionary<string, object>();
             Dictionary<string, object> extensions = new Dictionary<string, object>();
 
-            extensions.Add("ut_metadata", 16);
+            extensions.Add("ut_metadata", 254);
             extensionMsg.Add("m", extensions);
 
             Console.WriteLine(JsonSerializer.Serialize(extensionMsg));
@@ -61,7 +61,7 @@ namespace codecrafters_bittorrent.src
             Console.WriteLine(bencodedDict);
             var byteDict = Encoding.UTF8.GetBytes(bencodedDict);
 
-            var msgLengthPrefix = BitConverter.GetBytes(byteDict.Length + 2).Reverse();
+            var msgLengthPrefix = BitConverter.GetBytes(byteDict.Length + 1).Reverse();
 
             handShakeMsg.AddRange(msgLengthPrefix);
             handShakeMsg.Add((byte)msgId);
@@ -72,7 +72,7 @@ namespace codecrafters_bittorrent.src
             {
                 Console.Write(item + " ");
             }
-
+            Console.WriteLine();
             await tcpStream.WriteAsync(handShakeMsg.ToArray());
             Console.WriteLine("Handshake sended");
 
