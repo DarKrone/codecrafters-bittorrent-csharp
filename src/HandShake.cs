@@ -54,8 +54,6 @@ namespace codecrafters_bittorrent.src
 
             extensions.Add("ut_metadata", 16);
             extensionMsg.Add("m", extensions);
-            extensionMsg.Add("metadata_size", 0);
-            extensionMsg.Add("v", "innerBittorrent v0.0.9");
 
             Console.WriteLine(JsonSerializer.Serialize(extensionMsg));
 
