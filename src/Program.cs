@@ -143,7 +143,7 @@ internal class Program
         reservedBytes[5] = 16;
         byte[] handshakeMsgBytes = await HandShake.DoHandShake(stream, Convert.FromHexString(linkInfo.Hash), reservedBytes);
         string handshakeMsg = Convert.ToHexString(handshakeMsgBytes).ToLower();
-        Console.WriteLine(handshakeMsg[40..56]);
+
         string extensionsString = handshakeMsg[40..56];
         bool supportsExtensions = extensionsString[10] == '1';
         Console.WriteLine($"Peer ID: {handshakeMsg[(handshakeMsg.Length - 40)..]}");

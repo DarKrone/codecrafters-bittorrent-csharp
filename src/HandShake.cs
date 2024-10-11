@@ -69,6 +69,11 @@ namespace codecrafters_bittorrent.src
             handShakeMsg.Add((byte)0);
             handShakeMsg.AddRange(byteDict);
 
+            var buffer = new byte[1024];
+            await tcpStream.ReadAsync(buffer);
+
+            Console.WriteLine("Handshake received");
+
             foreach (var item in handShakeMsg)
             {
                 Console.Write(item + " ");
@@ -80,10 +85,6 @@ namespace codecrafters_bittorrent.src
             Console.WriteLine("Handshake sended");
             
 
-            var buffer = new byte[1024];
-            await tcpStream.ReadAsync(buffer);
-
-            Console.WriteLine("Handshake received");
 
             return buffer;
         }
