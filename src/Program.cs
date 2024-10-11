@@ -161,7 +161,14 @@ internal class Program
             var msgPrefix = extHandshakeMsgBytes[..4];
             msgPrefix.Reverse();
 
+            foreach( var msg in extHandshakeMsgBytes)
+            {
+                Console.Write(msg + " ");
+            }
+            Console.WriteLine();
             var payloadLength = BitConverter.ToInt32(msgPrefix);
+
+            Console.WriteLine("MsgPrefix: " + payloadLength);
 
             string extHandshakePayload = Bencode.Encode(Encoding.UTF8.GetString((byte[])extHandshakeMsgBytes.Skip(5).Take(payloadLength)));
 
