@@ -166,6 +166,8 @@ internal class Program
 
             Console.WriteLine(payloadDict);
 
+
+            //test
             if (payloadDict.TryGetValue("ut_metadata", out var metadata))
             {
                 Console.WriteLine($"Peer Metadata Extension ID: {metadata}");
