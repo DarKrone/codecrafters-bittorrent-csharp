@@ -24,6 +24,8 @@ namespace codecrafters_bittorrent.src
             var buffer = new byte[4096];
             var response = await tcpStream.ReadAsync(buffer);
             var temp = buffer[..10];
+
+            Console.WriteLine("Birfield received: ");
             foreach (var item in temp)
             {
                 Console.Write(item + " ");

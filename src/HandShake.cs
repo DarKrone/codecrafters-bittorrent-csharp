@@ -56,10 +56,10 @@ namespace codecrafters_bittorrent.src
             extensions.Add("ut_metadata", 1);
             extensionMsg.Add("m", extensions);
 
-            Console.WriteLine(JsonSerializer.Serialize(extensionMsg));
-
             var bencodedDict = Bencode.Encode(extensionMsg);
-            Console.WriteLine(bencodedDict);
+
+            Console.WriteLine("Payload message: " + bencodedDict);
+
             var byteDict = Encoding.UTF8.GetBytes(bencodedDict);
 
             var msgLengthPrefix = BitConverter.GetBytes(byteDict.Length + 2).Reverse();
@@ -69,6 +69,7 @@ namespace codecrafters_bittorrent.src
             handShakeMsg.Add((byte)0);
             handShakeMsg.AddRange(byteDict);
 
+            Console.WriteLine("Sending message: ");
             foreach (var item in handShakeMsg)
             {
                 Console.Write(item + " ");

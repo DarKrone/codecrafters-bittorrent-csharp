@@ -157,7 +157,7 @@ internal class Program
         //If the peer supports extensions (based on the reserved bit in the base handshake):
         if (supportsExtensions)
         {
-            Console.WriteLine("Support extensions");
+            Console.WriteLine("Peer support extensions");
             //Send the extension handshake message
             var extHandshakeMsgBytes = await HandShake.DoExtensionsHandShake(stream);
 
