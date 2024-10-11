@@ -161,7 +161,8 @@ internal class Program
             //Send the extension handshake message
             var extHandshakeMsgBytes = await HandShake.DoExtensionsHandShake(stream);
 
-            foreach( var msg in extHandshakeMsgBytes)
+            Console.WriteLine("Received handshake: ");
+            foreach ( var msg in extHandshakeMsgBytes)
             {
                 Console.Write(msg + " ");
             }
