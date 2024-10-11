@@ -158,6 +158,12 @@ internal class Program
             //Send the extension handshake message
             var extHandshakeMsgBytes = await HandShake.DoExtensionsHandShake(stream);
 
+            if (extHandshakeMsgBytes[5] != 20)
+            {
+                tcpClient.Close();
+                return;
+            }
+
             var msgPrefix = extHandshakeMsgBytes[..4];
             msgPrefix.Reverse();
 

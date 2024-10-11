@@ -9,6 +9,7 @@ using System.Web;
 using static System.Net.Mime.MediaTypeNames;
 using System.Text.Json.Nodes;
 using System.Text.Json;
+using System.Text.Unicode;
 
 namespace codecrafters_bittorrent.src
 {
@@ -52,7 +53,7 @@ namespace codecrafters_bittorrent.src
             Dictionary<string, object> extensionMsg = new Dictionary<string, object>();
             Dictionary<string, object> extensions = new Dictionary<string, object>();
 
-            extensions.Add("ut_metadata", 1);
+            extensions.Add("ut_metadata", 222);
             extensionMsg.Add("m", extensions);
 
             Console.WriteLine(JsonSerializer.Serialize(extensionMsg));
@@ -77,7 +78,7 @@ namespace codecrafters_bittorrent.src
             Console.WriteLine("Handshake sended");
 
 
-            var buffer = new byte[4096];
+            var buffer = new byte[1024];
 
             await tcpStream.ReadAsync(buffer);
 
