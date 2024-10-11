@@ -79,16 +79,12 @@ namespace codecrafters_bittorrent.src
 
             var buffer = new byte[4096];
 
-            while(true)
-            {
-                buffer = new byte[4096];
                 await tcpStream.ReadAsync(buffer);
                 if (buffer[4] == 20)
                 {
                     Console.WriteLine("Handshake received");
-                    break;
                 }
-            }
+
 
             return Convert.ToHexString(buffer).ToLower();
         }
