@@ -40,6 +40,15 @@ namespace codecrafters_bittorrent.src
             }
         }
 
+        public static async void SendBitfield(NetworkStream tcpStream)
+        {
+            var bitfieldMsg = new List<byte>();
+            bitfieldMsg.AddRange(new byte[] {0,0,0,5});
+            bitfieldMsg.Add(5);
+            bitfieldMsg.AddRange(new byte[] { 0, 0, 0, 0, 0, 0 });
+            await tcpStream.WriteAsync(bitfieldMsg.ToArray());
+        }
+
         public static async Task<bool> GetUnchoke(NetworkStream tcpStream)
         {
             List<byte> sendResponse = new List<byte>();
