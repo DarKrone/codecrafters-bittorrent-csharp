@@ -158,7 +158,12 @@ internal class Program
             //Send the extension handshake message
             var extHandshakeMsgBytes = await HandShake.DoExtensionsHandShake(stream);
 
-            if (extHandshakeMsgBytes[5] != 20)
+            foreach( var msg in extHandshakeMsgBytes)
+            {
+                Console.Write(msg + " ");
+            }
+
+            if (extHandshakeMsgBytes[4] != 20)
             {
                 tcpClient.Close();
                 return;
@@ -167,10 +172,6 @@ internal class Program
             var msgPrefix = extHandshakeMsgBytes[..4];
             msgPrefix.Reverse();
 
-            foreach( var msg in extHandshakeMsgBytes)
-            {
-                Console.Write(msg + " ");
-            }
             Console.WriteLine();
             var payloadLength = BitConverter.ToInt32(msgPrefix);
 
