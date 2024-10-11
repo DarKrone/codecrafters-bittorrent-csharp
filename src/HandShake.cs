@@ -46,19 +46,6 @@ namespace codecrafters_bittorrent.src
 
         public static async Task<byte[]> DoExtensionsHandShake(NetworkStream tcpStream)
         {
-            var buffer = new byte[1024];
-            while (true)
-            {
-                buffer = new byte[1024];
-                await tcpStream.ReadAsync(buffer);
-
-                if (buffer[15] != 0)
-                {
-                    Console.WriteLine("Handshake received");
-                    break;
-                }
-            }
-
             var msgId = 20;
 
             var handShakeMsg = new List<byte>();
@@ -91,6 +78,19 @@ namespace codecrafters_bittorrent.src
             Console.WriteLine();
             await tcpStream.WriteAsync(handShakeMsg.ToArray());
             Console.WriteLine("Handshake sended");
+
+            var buffer = new byte[1024];
+            while (true)
+            {
+                buffer = new byte[1024];
+                await tcpStream.ReadAsync(buffer);
+
+                if (buffer[15] != 0)
+                {
+                    Console.WriteLine("Handshake received");
+                    break;
+                }
+            }
 
             return buffer;
         }
