@@ -84,7 +84,7 @@ namespace codecrafters_bittorrent.src
             
             while (true)
             {
-                tcpStream.Read(buffer);
+                tcpStream.Read(buffer); // Либо не проходит по времени, либо получаю пустые байты
 
                 if (buffer[4] != 20)
                 {
