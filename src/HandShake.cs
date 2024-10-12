@@ -62,7 +62,7 @@ namespace codecrafters_bittorrent.src
 
             var byteDict = Encoding.UTF8.GetBytes(bencodedDict);
 
-            var msgLengthPrefix = BitConverter.GetBytes(byteDict.Length).Reverse();
+            var msgLengthPrefix = BitConverter.GetBytes(byteDict.Length + 2);
 
             handShakeMsg.AddRange(msgLengthPrefix);
             handShakeMsg.Add((byte)msgId);
