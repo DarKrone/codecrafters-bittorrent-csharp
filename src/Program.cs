@@ -162,12 +162,6 @@ internal class Program
                 Console.Write(msg + " ");
             }
 
-            if (extHandshakeMsgBytes[4] != 20)
-            {
-                tcpClient.Close();
-                return;
-            }
-
             var msgPrefix = extHandshakeMsgBytes[..4];
             msgPrefix.Reverse();
 
