@@ -85,7 +85,7 @@ namespace codecrafters_bittorrent.src
             while (true)
             {
                 tcpStream.Read(buffer); // Либо не проходит по времени, либо получаю пустые байты
-
+                // 13.10.24 тест
                 if (buffer[4] != 20)
                 {
                     Console.WriteLine("Handshake received");
