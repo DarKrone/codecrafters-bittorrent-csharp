@@ -152,26 +152,21 @@ namespace codecrafters_bittorrent.src
                 await tcpStream.ReadExactlyAsync(buffer, 0, blockLength + 13);
                 receivedBlocks.AddRange(buffer.Skip(13));
                 //Console.WriteLine($"Downloaded {i + 1} block. Length of block - {blockLength}");
-
-                //retry download if hashes didnt match
-                if (i == blocksCount - 1)
-                {
-                    var resultHash = Convert.ToHexString(SHA1.HashData(receivedBlocks.ToArray())).ToLower();
-                    Console.WriteLine("Needed hash : " + neededHash);
-                    Console.WriteLine("Control Hash : " + resultHash);
-                    if (resultHash == neededHash)
-                    {
-                        Console.WriteLine("Hashes matches");
-                    }
-                    else
-                    {
-                        i = 0;
-                        receivedBlocks = new List<byte>();
-                        Console.WriteLine("Hashes didnt match, Retry");
-                    }
-                }
             }
             //Console.WriteLine("All blocks downloaded and combined");
+
+
+            var resultHash = Convert.ToHexString(SHA1.HashData(receivedBlocks.ToArray())).ToLower();
+            Console.WriteLine("Needed hash : " + neededHash);
+            Console.WriteLine("Control Hash : " + resultHash);
+            if (resultHash == neededHash)
+            {
+                Console.WriteLine("Hashes matches");
+            }
+            else 
+            {
+                Console.WriteLine("Hashes didnt match");
+            }
 
             return receivedBlocks.ToArray();
         }
