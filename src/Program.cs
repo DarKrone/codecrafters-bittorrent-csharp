@@ -174,7 +174,7 @@ internal class Program
         return "-1";
     }
 
-    public static async Task ShowMagnetInfo(MagnetLinkInfo linkInfo) //“акой плохой метод, это ужас
+    public static async Task ShowMagnetInfo(MagnetLinkInfo linkInfo) //This method is so bad (((
     {
         var peerId = await GetMagnetLinkPeerId(linkInfo);
         var magnetInfoBytes = await Download.SendMetadataRequest(tcpClient?.GetStream()!, peerId);
@@ -183,7 +183,7 @@ internal class Program
         var piecesLength = magnetInfoString.Skip(magnetInfoString.IndexOf("6:pieces") + 8).Take(magnetInfoString.IndexOf(":")).ToArray();
         var dataWithoutPieces = magnetInfoBytes.Take(magnetInfoString.IndexOf("6:pieces")).ToList();
 
-        var extHandshakePayload = Bencode.Decode(Encoding.UTF8.GetString(dataWithoutPieces.ToArray()) + "e"); // особенно вот эта часть
+        var extHandshakePayload = Bencode.Decode(Encoding.UTF8.GetString(dataWithoutPieces.ToArray()) + "e"); // especially this part
         Dictionary<string, object> payloadDict = (Dictionary<string, object>)extHandshakePayload;
 
         var pieceHashes = Bencode.GetPieceHashes(magnetInfoBytes, magnetInfoString, int.Parse(payloadDict["length"].ToString()!), 
