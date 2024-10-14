@@ -166,6 +166,7 @@ namespace codecrafters_bittorrent.src
                     else
                     {
                         i = 0;
+                        receivedBlocks = new List<byte>();
                         Console.WriteLine("Hashes didnt match, Retry");
                     }
                 }
