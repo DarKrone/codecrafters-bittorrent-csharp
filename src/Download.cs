@@ -44,6 +44,31 @@ namespace codecrafters_bittorrent.src
             await tcpStream.WriteAsync(bitfieldMsg.ToArray());
         }
 
+        public static async Task<byte[]> SendMetadataRequest(NetworkStream tcpStream, string peerId)
+        {
+            var msgId = 20;
+
+            var handShakeMsg = new List<byte>();
+
+            Dictionary<string, object> extensionMsg = new Dictionary<string, object>();
+
+            extensionMsg.Add("msg_type", 0);
+            extensionMsg.Add("piece", 0);
+
+            var bencodedDict = Bencode.Encode(extensionMsg);
+            var byteDict = Encoding.UTF8.GetBytes(bencodedDict);
+
+            var msgLengthPrefix = BitConverter.GetBytes(byteDict.Length + 2).Reverse();
+
+            handShakeMsg.AddRange(msgLengthPrefix);
+            handShakeMsg.Add((byte)msgId);
+            handShakeMsg.Add((byte)int.Parse(peerId));
+            handShakeMsg.AddRange(byteDict);
+            await tcpStream.WriteAsync(handShakeMsg.ToArray());
+
+            return new byte[5];
+        }
+
         public static async Task<bool> GetUnchoke(NetworkStream tcpStream)
         {
             List<byte> sendResponse = new List<byte>();

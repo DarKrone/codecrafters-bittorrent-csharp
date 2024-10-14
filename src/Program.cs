@@ -2,10 +2,13 @@ using System.Text;
 using System.Text.Json;
 using System.Net.Sockets;
 using codecrafters_bittorrent.src;
+using System.Reflection.Metadata;
 
 
 internal class Program
 {
+    public static TcpClient? tcpClient;
+
     private static async Task Main(string[] args)
     {
         var command = args[0];
@@ -24,18 +27,26 @@ internal class Program
                 break;
             case "handshake":
                 await ShowPeerId(args[1], args[2]);
+                tcpClient?.Close();
                 break;
             case "download_piece":
                 await DownloadFile(args[1], args[2], args[3], int.Parse(args[4]));
+                tcpClient?.Close();
                 break;
             case "download":
                 await DownloadFile(args[1], args[2], args[3], -1); // -1 for download all pieces
+                tcpClient?.Close();
                 break;
             case "magnet_parse":
                 ShowMagnetLinkInfo(MagnetLink.ParseLink(args[1]));
                 break;
             case "magnet_handshake":
-                await ShowMagnetLinkPeerId(MagnetLink.ParseLink(args[1]));
+                var metadataId = await GetMagnetLinkPeerId(MagnetLink.ParseLink(args[1]));
+                tcpClient?.Close();
+                Console.WriteLine($"Peer Metadata Extension ID: {metadataId}");
+                break;
+            case "magnet_info":
+                await ShowMagnetInfo(MagnetLink.ParseLink(args[1]));
                 break;
             default:
                 throw new InvalidOperationException($"Invalid command: {command}");
@@ -72,7 +83,7 @@ internal class Program
 
     private static async Task ShowPeerId(string torrentFileName, string address)
     {
-        var tcpClient = new TcpClient();
+        tcpClient = new TcpClient();
         var addressAndPort = Address.GetAddressFromIPv4(address!);
 
         await tcpClient.ConnectAsync(addressAndPort.Item1, addressAndPort.Item2);
@@ -81,8 +92,6 @@ internal class Program
         var handshakeMsgString = BitConverter.ToString(handshakeMsgBytes);
         handshakeMsgString = handshakeMsgString.Replace("-", "").ToLower();
 
-        tcpClient.Close();
-
         Console.WriteLine($"Peer ID: {handshakeMsgString[(handshakeMsgString.Length - 40)..]}");
     }
 
@@ -90,7 +99,7 @@ internal class Program
     {
         var pieceHashes = Bencode.GetPieceHashes(torrentFileName);
         MetaInfo metaInfo = MetaInfo.GetInfo(torrentFileName);
-        var tcpClient = new TcpClient();
+        tcpClient = new TcpClient();
 
         var peers = Peers.GetPeers(torrentFileName);
         var address = peers.Result[0];
@@ -117,8 +126,6 @@ internal class Program
             var filePiece = await Download.DownloadPiece(stream, pieceIndex, metaInfo, pieceHashes[pieceIndex]);
             ReadWriteFile.WriteBytesToFile(saveFileLocation, filePiece);
         }
-
-        tcpClient.Close();
     }
 
     public static void ShowMagnetLinkInfo(MagnetLinkInfo linkInfo)
@@ -126,12 +133,12 @@ internal class Program
         Console.WriteLine($"Tracker URL: {linkInfo.Url}\nInfo Hash: {linkInfo.Hash}");
     }
 
-    public static async Task ShowMagnetLinkPeerId(MagnetLinkInfo linkInfo)
+    public static async Task<string> GetMagnetLinkPeerId(MagnetLinkInfo linkInfo)
     {
         //Establish a TCP connection with a peer
         var peers = Peers.GetPeers(Convert.FromHexString(linkInfo.Hash), "999", linkInfo.Url).Result;
 
-        TcpClient tcpClient = new TcpClient();
+        tcpClient = new TcpClient();
         var addressAndPort = Address.GetAddressFromIPv4(peers[0]);
         await tcpClient.ConnectAsync(addressAndPort.Item1, addressAndPort.Item2);
         var stream = tcpClient.GetStream();
@@ -149,7 +156,7 @@ internal class Program
         //Send the bitfield message (safe to ignore in this challenge) -- Receive the bitfield message
         if (!await Download.GetBitfield(stream))
         {
-            return;
+            return "-1";
         }
 
         //If the peer supports extensions (based on the reserved bit in the base handshake):
@@ -162,9 +169,15 @@ internal class Program
             Dictionary<string, object> payloadDict = (Dictionary<string, object>)extHandshakePayload;
             Dictionary<string, object> payloadInnerDict = (Dictionary<string, object>)payloadDict["m"];
             string metadataId = payloadInnerDict["ut_metadata"].ToString()!;
-            Console.WriteLine($"Peer Metadata Extension ID: {metadataId}");
-            
+            return metadataId;
         }
-        tcpClient.Close();
+        return "-1";
+    }
+
+    public static async Task<string> ShowMagnetInfo(MagnetLinkInfo linkInfo)
+    {
+        var peerId = await GetMagnetLinkPeerId(linkInfo);
+        var magnetInfoBytes = await Download.SendMetadataRequest(tcpClient?.GetStream()!, peerId);
+        return "";
     }
 }
