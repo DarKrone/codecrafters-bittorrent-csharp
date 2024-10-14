@@ -115,7 +115,7 @@ internal class Program
         tcpClient = new TcpClient();
 
         var peers = Peers.GetPeers(torrentFileName);
-        var address = peers.Result[0];
+        var address = peers.Result[1];
 
         var addressAndPort = Address.GetAddressFromIPv4(address!);
 
