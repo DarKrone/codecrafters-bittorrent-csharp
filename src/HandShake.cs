@@ -57,9 +57,6 @@ namespace codecrafters_bittorrent.src
             extensionMsg.Add("m", extensions);
 
             var bencodedDict = Bencode.Encode(extensionMsg);
-
-            Console.WriteLine("Payload message: " + bencodedDict);
-
             var byteDict = Encoding.UTF8.GetBytes(bencodedDict);
 
             var msgLengthPrefix = BitConverter.GetBytes(byteDict.Length + 2).Reverse();
@@ -69,29 +66,20 @@ namespace codecrafters_bittorrent.src
             handShakeMsg.Add((byte)0);
             handShakeMsg.AddRange(byteDict);
 
-            Console.WriteLine("Sending message: ");
-            foreach (var item in handShakeMsg)
-            {
-                Console.Write(item + " ");
-            }
-
-            Console.WriteLine();
             await tcpStream.WriteAsync(handShakeMsg.ToArray());
-  
-            Console.WriteLine("Handshake sended");
 
-            var buffer = new byte[128];
-            
+            var msgPrefix = new byte[4];
+            await tcpStream.ReadExactlyAsync(msgPrefix, 0, 4);
+            Array.Reverse(msgPrefix);
+            var msgLength = BitConverter.ToInt32(msgPrefix);
 
+            var ids = new byte[2];
+            await tcpStream.ReadExactlyAsync(ids, 0, 2);
 
-            await tcpStream.ReadAsync(buffer); // Либо не проходит по времени, либо получаю пустые байты
-            // 14.10.24 тест
+            var payloadDict = new byte[msgLength - 2];
+            await tcpStream.ReadExactlyAsync(payloadDict, 0, msgLength - 2);
 
-            Console.WriteLine("Handshake received");
-
-
-
-            return buffer;
+            return payloadDict;
         }
     }
 }

@@ -146,46 +146,22 @@ internal class Program
         //Send the bitfield message (safe to ignore in this challenge) -- Receive the bitfield message
         if (!await Download.GetBitfield(stream))
         {
-            Console.WriteLine("Peer dont send bitfield");
             return;
         }
 
         //If the peer supports extensions (based on the reserved bit in the base handshake):
         if (supportsExtensions)
         {
-            Console.WriteLine("Peer support extensions");
             //Send the extension handshake message
             var extHandshakeMsgBytes = await HandShake.DoExtensionsHandShake(stream);
+            var extHandshakePayload = Bencode.Decode(Encoding.UTF8.GetString(extHandshakeMsgBytes));
 
-            Console.WriteLine("Received handshake: ");
-            foreach ( var msg in extHandshakeMsgBytes)
-            {
-                Console.Write(msg + " ");
-            }
-
-            //var msgPrefix = extHandshakeMsgBytes[..4];
-            //msgPrefix.Reverse();
-
-            //Console.WriteLine();
-            //var payloadLength = BitConverter.ToInt32(msgPrefix);
-
-            //Console.WriteLine("MsgPrefix: " + payloadLength);
-
-            //string extHandshakePayload = Bencode.Encode(Encoding.UTF8.GetString((byte[])extHandshakeMsgBytes.Skip(5).Take(payloadLength)));
-
-            //var payloadDict = JsonSerializer.Deserialize<Dictionary<string, object>>(extHandshakePayload)!;
-
-            //Console.WriteLine(payloadDict);
-
-
-            ////test
-            //if (payloadDict.TryGetValue("ut_metadata", out var metadata))
-            //{
-            //    Console.WriteLine($"Peer Metadata Extension ID: {metadata}");
-            //}
+            Dictionary<string, object> payloadDict = (Dictionary<string, object>)extHandshakePayload;
+            Dictionary<string, object> payloadInnerDict = (Dictionary<string, object>)payloadDict["m"];
+            string metadataId = payloadInnerDict["ut_metadata"].ToString()!;
+            Console.WriteLine($"Peer Metadata Extension ID: {metadataId}");
+            
         }
-
-
         tcpClient.Close();
     }
 }
