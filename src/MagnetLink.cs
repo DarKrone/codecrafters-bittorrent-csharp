@@ -40,4 +40,25 @@ namespace codecrafters_bittorrent.src
         }
     }
 
+    public class MagnetLinkMetadata
+    {
+        public string Url { get; set; }
+
+        public string Length { get; set; }
+
+        public string InfoHash { get; set; }
+
+        public string PieceLength { get; set; }
+
+        public string[] PiecesHashes { get; set; }
+
+        public MagnetLinkMetadata(string url, string length, string infoHash, string peceLength, string[] piecesHashes)
+        {
+            Url = url;
+            Length = length;
+            InfoHash = infoHash;
+            PieceLength = peceLength;
+            PiecesHashes = piecesHashes;
+        }
+    }
 }

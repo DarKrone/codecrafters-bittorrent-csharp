@@ -46,7 +46,20 @@ internal class Program
                 Console.WriteLine($"Peer Metadata Extension ID: {metadataId}");
                 break;
             case "magnet_info":
-                await ShowMagnetInfo(MagnetLink.ParseLink(args[1]));
+                var info = await GetMagnetInfo(MagnetLink.ParseLink(args[1]));
+                Console.WriteLine($"Tracker URL: {info.Url}\nLength: {info.Length}\nInfo Hash: {info.InfoHash}\nPiece Length: {info.PieceLength}" +
+                          $"\n{string.Join("\n", info.PiecesHashes)}");
+                tcpClient?.Close();
+                break;
+            case "magnet_download_piece":
+                var magnetInfo = await GetMagnetInfo(MagnetLink.ParseLink(args[3]));
+                await DownloadFileMagnet(args[2], magnetInfo, int.Parse(args[4]));
+                tcpClient?.Close();
+                break;
+            case "magnet_download": // if i dont get lazy -- need to refactor this all
+                var magnetInfo2 = await GetMagnetInfo(MagnetLink.ParseLink(args[3]));
+                await DownloadFileMagnet(args[2], magnetInfo2, -1);
+                tcpClient?.Close();
                 break;
             default:
                 throw new InvalidOperationException($"Invalid command: {command}");
@@ -174,13 +187,13 @@ internal class Program
         return "-1";
     }
 
-    public static async Task ShowMagnetInfo(MagnetLinkInfo linkInfo) //This method is so bad (((Test)))
+    public static async Task<MagnetLinkMetadata> GetMagnetInfo(MagnetLinkInfo linkInfo) //This method is so bad (((
     {
         var peerId = await GetMagnetLinkPeerId(linkInfo);
         var magnetInfoBytes = await Download.SendMetadataRequest(tcpClient?.GetStream()!, peerId);
         var magnetInfoString = Encoding.UTF8.GetString(magnetInfoBytes);
 
-        var piecesLength = magnetInfoString.Skip(magnetInfoString.IndexOf("6:pieces") + 8).Take(magnetInfoString.IndexOf(":")).ToArray();
+        var piecesLength = magnetInfoString.Skip(magnetInfoString.IndexOf("6:pieces") + 8).Take(magnetInfoString.IndexOf(":")).ToArray(); //This part
         var dataWithoutPieces = magnetInfoBytes.Take(magnetInfoString.IndexOf("6:pieces")).ToList();
 
         var extHandshakePayload = Bencode.Decode(Encoding.UTF8.GetString(dataWithoutPieces.ToArray()) + "e"); // especially this part
@@ -189,7 +202,40 @@ internal class Program
         var pieceHashes = Bencode.GetPieceHashes(magnetInfoBytes, magnetInfoString, int.Parse(payloadDict["length"].ToString()!), 
                                                  int.Parse(payloadDict["piece length"].ToString()!));
 
-        Console.WriteLine($"Tracker URL: {linkInfo.Url}\nLength: {payloadDict["length"]}\nInfo Hash: {linkInfo.Hash}\nPiece Length: {payloadDict["piece length"]}" +
-                          $"\n{string.Join("\n", pieceHashes)}");
+        return new MagnetLinkMetadata(linkInfo.Url, payloadDict["length"].ToString()!, linkInfo.Hash, payloadDict["piece length"].ToString()!, pieceHashes);
+    }
+
+    public static async Task DownloadFileMagnet(string saveFileLocation, MagnetLinkMetadata info, int pieceIndex) //This is also so shity code
+    {
+        tcpClient = new TcpClient();
+
+        var peers = Peers.GetPeers(Convert.FromHexString(info.InfoHash), "999", info.Url).Result;
+        var address = peers[0];
+        var addressAndPort = Address.GetAddressFromIPv4(address!);
+
+        await tcpClient.ConnectAsync(addressAndPort.Item1, addressAndPort.Item2);
+        var stream = tcpClient.GetStream();
+
+        var handshakeMsg = HandShake.DoHandShake(stream, Convert.FromHexString(info.InfoHash)).Result;
+
+        var metaInfo = new MetaInfo();
+        metaInfo.Info.Length = int.Parse(info.Length);
+        metaInfo.Info.PieceLength = int.Parse(info.PieceLength);
+        await Download.GetReadyToDownload(stream);
+        if (pieceIndex == -1)
+        {
+            List<byte> combinedPieces = new List<byte>();
+            for (int i = 0; i < info.PiecesHashes.Length; i++)
+            {
+                var filePiece = await Download.DownloadPiece(stream, i, metaInfo, info.PiecesHashes[i]);
+                combinedPieces.AddRange(filePiece);
+            }
+            ReadWriteFile.WriteBytesToFile(saveFileLocation, combinedPieces.ToArray());
+        }
+        else
+        {
+            var filePiece = await Download.DownloadPiece(stream, pieceIndex, metaInfo, info.PiecesHashes[pieceIndex]);
+            ReadWriteFile.WriteBytesToFile(saveFileLocation, filePiece);
+        }
     }
 }
