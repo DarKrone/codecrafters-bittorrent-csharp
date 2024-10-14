@@ -14,7 +14,7 @@ internal class Program
         var command = args[0];
 
         // Parse command and act accordingly
-        switch (command)
+        switch (command) // retry
         {
             case "decode":
                 ShowDecode(args[1]);
