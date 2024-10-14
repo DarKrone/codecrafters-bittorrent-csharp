@@ -53,7 +53,7 @@ namespace codecrafters_bittorrent.src
             Dictionary<string, object> extensionMsg = new Dictionary<string, object>();
             Dictionary<string, object> extensions = new Dictionary<string, object>();
 
-            extensions.Add("ut_metadata", 256);
+            extensions.Add("ut_metadata", 12);
             extensionMsg.Add("m", extensions);
 
             var bencodedDict = Bencode.Encode(extensionMsg);
