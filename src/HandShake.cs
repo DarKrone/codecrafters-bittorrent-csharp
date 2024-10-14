@@ -80,7 +80,7 @@ namespace codecrafters_bittorrent.src
   
             Console.WriteLine("Handshake sended");
 
-            var buffer = new byte[128];
+            var buffer = new byte[4096];
             
 
 
