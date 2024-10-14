@@ -21,7 +21,7 @@ namespace codecrafters_bittorrent.src
 
         public static async Task<bool> GetBitfield(NetworkStream tcpStream)
         {
-            var buffer = new byte[4096];
+            var buffer = new byte[4];
             var response = await tcpStream.ReadAsync(buffer);
             var temp = buffer[..10];
 

@@ -146,6 +146,7 @@ internal class Program
         //Send the bitfield message (safe to ignore in this challenge) -- Receive the bitfield message
         if (!await Download.GetBitfield(stream))
         {
+            Console.WriteLine("Peer dont send bitfield");
             return;
         }
 
