@@ -154,7 +154,7 @@ namespace codecrafters_bittorrent.src
                 //Console.WriteLine($"Downloaded {i + 1} block. Length of block - {blockLength}");
 
                 //retry download if hashes didnt match
-                if (i == blocksCount)
+                if (i == blocksCount - 1)
                 {
                     var resultHash = Convert.ToHexString(SHA1.HashData(receivedBlocks.ToArray())).ToLower();
                     Console.WriteLine("Needed hash : " + neededHash);
