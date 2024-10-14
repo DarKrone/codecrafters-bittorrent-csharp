@@ -157,17 +157,16 @@ namespace codecrafters_bittorrent.src
 
 
             var resultHash = Convert.ToHexString(SHA1.HashData(receivedBlocks.ToArray())).ToLower();
-            //Console.WriteLine("Needed hash : " + neededHash);
-            //Console.WriteLine("Control Hash : " + resultHash);
-            //if (resultHash == neededHash)
-            //{
-            //    Console.WriteLine("Hashes matches");
-            //}
-            //else 
-            //{
-            //    Console.WriteLine("Hashes didnt match");
-            //}
-            //Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine("Needed hash : " + neededHash);
+            Console.WriteLine("Control Hash : " + resultHash);
+            if (resultHash == neededHash)
+            {
+                Console.WriteLine("Hashes matches");
+            }
+            else 
+            {
+                Console.WriteLine("Hashes didnt match");
+            }
 
             return receivedBlocks.ToArray();
         }
