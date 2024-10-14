@@ -162,26 +162,26 @@ internal class Program
                 Console.Write(msg + " ");
             }
 
-            var msgPrefix = extHandshakeMsgBytes[..4];
-            msgPrefix.Reverse();
+            //var msgPrefix = extHandshakeMsgBytes[..4];
+            //msgPrefix.Reverse();
 
-            Console.WriteLine();
-            var payloadLength = BitConverter.ToInt32(msgPrefix);
+            //Console.WriteLine();
+            //var payloadLength = BitConverter.ToInt32(msgPrefix);
 
-            Console.WriteLine("MsgPrefix: " + payloadLength);
+            //Console.WriteLine("MsgPrefix: " + payloadLength);
 
-            string extHandshakePayload = Bencode.Encode(Encoding.UTF8.GetString((byte[])extHandshakeMsgBytes.Skip(5).Take(payloadLength)));
+            //string extHandshakePayload = Bencode.Encode(Encoding.UTF8.GetString((byte[])extHandshakeMsgBytes.Skip(5).Take(payloadLength)));
 
-            var payloadDict = JsonSerializer.Deserialize<Dictionary<string, object>>(extHandshakePayload)!;
+            //var payloadDict = JsonSerializer.Deserialize<Dictionary<string, object>>(extHandshakePayload)!;
 
-            Console.WriteLine(payloadDict);
+            //Console.WriteLine(payloadDict);
 
 
-            //test
-            if (payloadDict.TryGetValue("ut_metadata", out var metadata))
-            {
-                Console.WriteLine($"Peer Metadata Extension ID: {metadata}");
-            }
+            ////test
+            //if (payloadDict.TryGetValue("ut_metadata", out var metadata))
+            //{
+            //    Console.WriteLine($"Peer Metadata Extension ID: {metadata}");
+            //}
         }
 
 

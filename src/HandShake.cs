@@ -53,7 +53,7 @@ namespace codecrafters_bittorrent.src
             Dictionary<string, object> extensionMsg = new Dictionary<string, object>();
             Dictionary<string, object> extensions = new Dictionary<string, object>();
 
-            extensions.Add("ut_metadata", 1);
+            extensions.Add("ut_metadata", 256);
             extensionMsg.Add("m", extensions);
 
             var bencodedDict = Bencode.Encode(extensionMsg);
@@ -82,16 +82,14 @@ namespace codecrafters_bittorrent.src
 
             var buffer = new byte[128];
             
-            while (true)
-            {
-                tcpStream.Read(buffer); // Либо не проходит по времени, либо получаю пустые байты
-                // 13.10.24 тест
-                if (buffer[4] != 20)
-                {
-                    Console.WriteLine("Handshake received");
-                    break;
-                }
-            }
+
+
+            await tcpStream.ReadAsync(buffer); // Либо не проходит по времени, либо получаю пустые байты
+            // 14.10.24 тест
+
+            Console.WriteLine("Handshake received");
+
+
 
             return buffer;
         }
