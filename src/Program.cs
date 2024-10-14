@@ -77,10 +77,13 @@ internal class Program
 
         await tcpClient.ConnectAsync(addressAndPort.Item1, addressAndPort.Item2);
         var stream = tcpClient.GetStream();
-        var handshakeMsg = HandShake.DoHandShake(stream, Bencode.GetInfoHashBytes(torrentFileName)).Result;
+        var handshakeMsgBytes = HandShake.DoHandShake(stream, Bencode.GetInfoHashBytes(torrentFileName)).Result;
+        var handshakeMsgString = BitConverter.ToString(handshakeMsgBytes);
+        handshakeMsgString = handshakeMsgString.Replace("-", "").ToLower();
 
         tcpClient.Close();
-        Console.WriteLine($"Peer ID: {handshakeMsg[(handshakeMsg.Length - 40)..]}");
+
+        Console.WriteLine($"Peer ID: {handshakeMsgString[(handshakeMsgString.Length - 40)..]}");
     }
 
     private static async Task DownloadFile(string outputFlag, string saveFileLocation, string torrentFileName, int pieceIndex) // if need download all pieces: pieceIndex = -1
