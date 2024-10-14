@@ -21,9 +21,9 @@ namespace codecrafters_bittorrent.src
 
         public static async Task<bool> GetBitfield(NetworkStream tcpStream)
         {
-            var buffer = new byte[4];
+            var buffer = new byte[5];
             var response = await tcpStream.ReadAsync(buffer);
-            var temp = buffer[..10];
+            var temp = buffer;
 
             Console.WriteLine("Birfield received: ");
             foreach (var item in temp)
