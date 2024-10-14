@@ -210,7 +210,7 @@ internal class Program
         tcpClient = new TcpClient();
 
         var peers = Peers.GetPeers(Convert.FromHexString(info.InfoHash), "999", info.Url).Result;
-        var address = peers[0];
+        var address = peers[1];
         var addressAndPort = Address.GetAddressFromIPv4(address!);
 
         await tcpClient.ConnectAsync(addressAndPort.Item1, addressAndPort.Item2);

@@ -132,7 +132,7 @@ namespace codecrafters_bittorrent.src
                 throw new Exception("No downloadable blocks (16384) in piece");
             }
             var buffer = new byte[4096];
-            Console.WriteLine($"Start downloading {blocksCount} blocks, total blocks length - {pieceLength}");
+            //Console.WriteLine($"Start downloading {blocksCount} blocks, total blocks length - {pieceLength}");
 
             List<byte> receivedBlocks = new List<byte>();
             for (int i = 0; i < blocksCount; i++)
@@ -151,9 +151,9 @@ namespace codecrafters_bittorrent.src
                 buffer = new byte[blockLength + 13];
                 await tcpStream.ReadExactlyAsync(buffer, 0, blockLength + 13);
                 receivedBlocks.AddRange(buffer.Skip(13));
-                Console.WriteLine($"Downloaded {i + 1} block. Length of block - {blockLength}");
+                //Console.WriteLine($"Downloaded {i + 1} block. Length of block - {blockLength}");
             }
-            Console.WriteLine("All blocks downloaded and combined");
+            //Console.WriteLine("All blocks downloaded and combined");
 
 
             var resultHash = Convert.ToHexString(SHA1.HashData(receivedBlocks.ToArray())).ToLower();
