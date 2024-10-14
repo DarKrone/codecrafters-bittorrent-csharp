@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Runtime.Intrinsics.Arm;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -66,7 +67,25 @@ namespace codecrafters_bittorrent.src
             handShakeMsg.AddRange(byteDict);
             await tcpStream.WriteAsync(handShakeMsg.ToArray());
 
-            return new byte[5];
+            var msgPrefix = new byte[4];
+            await tcpStream.ReadExactlyAsync(msgPrefix, 0, 4);
+            Array.Reverse(msgPrefix);
+            var msgLength = BitConverter.ToInt32(msgPrefix);
+
+            var ids = new byte[2];
+            await tcpStream.ReadExactlyAsync(ids, 0, 2);
+
+            var payloadBuffer = new byte[msgLength - 2];
+            await tcpStream.ReadExactlyAsync(payloadBuffer, 0, msgLength - 2);
+
+            var extHandshakePayload = Bencode.Decode(Encoding.UTF8.GetString(payloadBuffer));
+            Dictionary<string, object> payloadDict = (Dictionary<string, object>)extHandshakePayload;
+
+            var metadataSize = int.Parse(payloadDict["total_size"].ToString()!);
+
+            var metadataBytes = payloadBuffer.Skip(msgLength - metadataSize - 2).ToArray();
+
+            return metadataBytes;
         }
 
         public static async Task<bool> GetUnchoke(NetworkStream tcpStream)

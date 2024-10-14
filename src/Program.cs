@@ -174,10 +174,22 @@ internal class Program
         return "-1";
     }
 
-    public static async Task<string> ShowMagnetInfo(MagnetLinkInfo linkInfo)
+    public static async Task ShowMagnetInfo(MagnetLinkInfo linkInfo) //“акой плохой метод, это ужас
     {
         var peerId = await GetMagnetLinkPeerId(linkInfo);
         var magnetInfoBytes = await Download.SendMetadataRequest(tcpClient?.GetStream()!, peerId);
-        return "";
+        var magnetInfoString = Encoding.UTF8.GetString(magnetInfoBytes);
+
+        var piecesLength = magnetInfoString.Skip(magnetInfoString.IndexOf("6:pieces") + 8).Take(magnetInfoString.IndexOf(":")).ToArray();
+        var dataWithoutPieces = magnetInfoBytes.Take(magnetInfoString.IndexOf("6:pieces")).ToList();
+
+        var extHandshakePayload = Bencode.Decode(Encoding.UTF8.GetString(dataWithoutPieces.ToArray()) + "e"); // особенно вот эта часть
+        Dictionary<string, object> payloadDict = (Dictionary<string, object>)extHandshakePayload;
+
+        var pieceHashes = Bencode.GetPieceHashes(magnetInfoBytes, magnetInfoString, int.Parse(payloadDict["length"].ToString()!), 
+                                                 int.Parse(payloadDict["piece length"].ToString()!));
+
+        Console.WriteLine($"Tracker URL: {linkInfo.Url}\nLength: {payloadDict["length"]}\nInfo Hash: {linkInfo.Hash}\nPiece Length: {payloadDict["piece length"]}" +
+                          $"\n{string.Join("\n", pieceHashes)}");
     }
 }

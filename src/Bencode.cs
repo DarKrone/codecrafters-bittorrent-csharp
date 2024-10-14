@@ -28,7 +28,12 @@ namespace codecrafters_bittorrent.src
             var bytes = ReadWriteFile.ReadBytesFromFile(torrentFileName);
             var stream = ReadWriteFile.ReadStringFromFile(torrentFileName);
 
-            string[] pieceHashes = new string[(int)Math.Ceiling((double)metaInfo.Info.Length / metaInfo.Info.PieceLength)];
+            return GetPieceHashes(bytes, stream, metaInfo.Info.Length, metaInfo.Info.PieceLength);
+        }
+
+        public static string[] GetPieceHashes(byte[] bytes, string stream, int length, int pieceLength)
+        {
+            string[] pieceHashes = new string[(int)Math.Ceiling((double)length / pieceLength)];
 
             const string piecesMark = "6:pieces";
             var piecesBytesStart = bytes[(stream.IndexOf(piecesMark) + piecesMark.Length - 1)..];
