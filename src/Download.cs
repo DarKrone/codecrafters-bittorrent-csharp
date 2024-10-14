@@ -151,9 +151,9 @@ namespace codecrafters_bittorrent.src
                 buffer = new byte[blockLength + 13];
                 await tcpStream.ReadExactlyAsync(buffer, 0, blockLength + 13);
                 receivedBlocks.AddRange(buffer.Skip(13));
-                //Console.WriteLine($"Downloaded {i + 1} block. Length of block - {blockLength}");
+                Console.WriteLine($"Downloaded {i + 1} block. Length of block - {blockLength}");
             }
-            //Console.WriteLine("All blocks downloaded and combined");
+            Console.WriteLine("All blocks downloaded and combined");
 
 
             var resultHash = Convert.ToHexString(SHA1.HashData(receivedBlocks.ToArray())).ToLower();
