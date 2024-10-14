@@ -132,7 +132,7 @@ namespace codecrafters_bittorrent.src
                 throw new Exception("No downloadable blocks (16384) in piece");
             }
             var buffer = new byte[4096];
-            //Console.WriteLine($"Start downloading {blocksCount} blocks, total blocks length - {pieceLength}");
+            Console.WriteLine($"Start downloading {blocksCount} blocks, total blocks length - {pieceLength}");
 
             List<byte> receivedBlocks = new List<byte>();
             for (int i = 0; i < blocksCount; i++)
