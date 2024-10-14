@@ -174,7 +174,7 @@ internal class Program
         return "-1";
     }
 
-    public static async Task ShowMagnetInfo(MagnetLinkInfo linkInfo) //This method is so bad (((
+    public static async Task ShowMagnetInfo(MagnetLinkInfo linkInfo) //This method is so bad (((Test)))
     {
         var peerId = await GetMagnetLinkPeerId(linkInfo);
         var magnetInfoBytes = await Download.SendMetadataRequest(tcpClient?.GetStream()!, peerId);
