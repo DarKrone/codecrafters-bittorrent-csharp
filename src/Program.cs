@@ -33,8 +33,8 @@ internal class Program
                 await DownloadFile(args[1], args[2], args[3], int.Parse(args[4]));
                 tcpClient?.Close();
                 break;
-            case "download":
-                await DownloadFile(args[1], args[2], args[3], -1); // -1 for download all pieces
+            case "download": // 14.10.2024 hashes didnt match
+                await DownloadFile(args[1], args[2], args[3], -1); // -1 for download all pieces 
                 tcpClient?.Close();
                 break;
             case "magnet_parse":
